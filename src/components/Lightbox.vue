@@ -1,6 +1,6 @@
 <script setup>
 import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 
 const props = defineProps({
   src: String,
@@ -13,9 +13,125 @@ const deltaX = ref(0)
 const deltaY = ref(0)
 const isSwiping = ref(false)
 
-function onPointerDown(e) {
-  if (e.pointerType === 'mouse') return
+// ===== zoom/ pan logic ============
+const scale = ref(1)
+const minScale = 1
+const maxScale = 10
 
+const translateX = ref(0)
+const translateY = ref(0)
+
+const isPanning = ref(false)
+let lastX = 0
+let lastY = 0
+let lastDistance = 0
+const mediaContainer = ref(null)
+const containerRect = ref({ width: 0, height: 0 })
+
+const panBounds = computed(() => {
+  if (scale.value <= 1) {
+    return { x: 0, y: 0 }
+  }
+
+  const extraX =
+    (containerRect.value.width * Math.min(scale.value, 2) - containerRect.value.width) / 2
+
+  const extraY =
+    (containerRect.value.height * Math.min(scale.value, 2) - containerRect.value.height) / 2
+
+  return {
+    x: extraX,
+    y: extraY
+  }
+})
+
+function updateContainerRect() {
+  if (!mediaContainer.value) return
+  const r = mediaContainer.value.getBoundingClientRect()
+  containerRect.value = { width: r.width, height: r.height }
+}
+
+function clamp(val, min, max) {
+  return Math.min(max, Math.max(min, val))
+}
+
+watch(scale, () => {
+  translateX.value = clamp(
+    translateX.value,
+    -panBounds.value.x,
+    panBounds.value.x
+  )
+  translateY.value = clamp(
+    translateY.value,
+    -panBounds.value.y,
+    panBounds.value.y
+  )
+})
+
+onMounted(() => {
+  updateContainerRect()
+  window.addEventListener('resize', updateContainerRect)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateContainerRect)
+})
+
+const cursor = computed(() => {
+  if (props.item.type !== 'image') return 'default'
+  if (scale.value <= 1) return 'default'
+  return isPanning.value ? 'grabbing' : 'grab'
+})
+
+function getDistance(touches) {
+  const [a, b] = touches
+  return Math.hypot(
+    b.clientX - a.clientX,
+    b.clientY - a.clientY
+  )
+}
+
+function onWheel(e) {
+  //if (props.item.type !== 'image') return
+
+  e.preventDefault()
+
+  const delta = -e.deltaY
+  const zoomFactor = delta > 0 ? 1.1 : 0.9
+
+  const nextScale = Math.min(
+    maxScale,
+    Math.max(minScale, scale.value * zoomFactor)
+  )
+
+  // Reset pan when fully zoomed out
+  if (nextScale === 1) {
+    translateX.value = 0
+    translateY.value = 0
+  }
+
+  scale.value = nextScale
+}
+
+function onPointerDown(e) 
+{
+  e.preventDefault()
+  console.log("onPointerDown")
+  console.log(containerRect.value.height, containerRect.value.width)
+
+  //if (props.item.type !== 'image') return
+
+  if (scale.value > 1) {
+    isPanning.value = true
+    lastX = e.clientX
+    lastY = e.clientY
+
+    e.currentTarget.setPointerCapture(e.pointerId)
+    return
+  }
+
+  // swipe logic
+  if (e.pointerType === 'mouse') return
   startX.value = e.clientX
   startY.value = e.clientY
   deltaX.value = 0
@@ -23,32 +139,86 @@ function onPointerDown(e) {
   isSwiping.value = true
 }
 
+function onPointerUp(e) 
+{
+  console.log("onPointerUp")
+
+  if (isPanning.value) {
+    e.currentTarget.releasePointerCapture(e.pointerId)
+  }
+
+  isPanning.value = false
+
+  if (!isSwiping.value) return
+
+  const absX = Math.abs(deltaX.value)
+  const absY = Math.abs(deltaY.value)
+
+  if (scale.value === 1) {
+    const SWIPE_THRESHOLD = 60
+
+    if (absX > absY && absX > SWIPE_THRESHOLD) {
+      deltaX.value > 0 ? emit('prev') : emit('next')
+    }
+
+    if (absY > absX && absY > SWIPE_THRESHOLD && deltaY.value > 0) {
+      emit('close')
+    }
+  }
+
+  isSwiping.value = false
+}
+
 function onPointerMove(e) {
+  console.log("onPointerMove")
+  if (isPanning.value) 
+  {
+    const dx = e.clientX - lastX
+    const dy = e.clientY - lastY
+
+    const nextX = translateX.value + dx / (scale.value * 0.8)
+    const nextY = translateY.value + dy / (scale.value * 0.8)
+
+    translateX.value = clamp(nextX, -panBounds.value.x, panBounds.value.x)
+    translateY.value = clamp(nextY, -panBounds.value.y, panBounds.value.y)
+
+    lastX = e.clientX
+    lastY = e.clientY
+    console.log({ nextX, nextY, translateX: translateX.value, scale: scale.value})
+    return
+  }
+
   if (!isSwiping.value) return
 
   deltaX.value = e.clientX - startX.value
   deltaY.value = e.clientY - startY.value
 }
 
-function onPointerUp() {
-  if (!isSwiping.value) return
+watch(isPanning, (val, oldVal) => {
+  console.log('[isPanning]', oldVal, '→', val)
+})
 
-  const absX = Math.abs(deltaX.value)
-  const absY = Math.abs(deltaY.value)
+function onTouchMove(e) {
+  if (e.touches.length !== 2) return
 
-  const SWIPE_THRESHOLD = 60
+  e.preventDefault()
 
-  // Horizontal swipe
-  if (absX > absY && absX > SWIPE_THRESHOLD) {
-    deltaX.value > 0 ? emit('prev') : emit('next')
+  const distance = getDistance(e.touches)
+
+  if (!lastDistance) 
+  {
+    lastDistance = distance
+    return
   }
 
-  // Vertical swipe (close)
-  if (absY > absX && absY > SWIPE_THRESHOLD && deltaY.value > 0) {
-    emit('close')
-  }
+  const zoomFactor = distance / lastDistance
+  scale.value = Math.min(maxScale, Math.max(minScale, scale.value * zoomFactor))
 
-  isSwiping.value = false
+  lastDistance = distance
+}
+
+function onTouchEnd() {
+  lastDistance = 0
 }
 
 const videoEl = ref(null)
@@ -88,6 +258,20 @@ watch(
     }
   }
 )
+
+watch(
+  () => props.item,
+  () => {
+    scale.value = 1
+    translateX.value = 0
+    translateY.value = 0
+
+    if (videoEl.value) {
+      videoEl.value.pause()
+      videoEl.value.currentTime = 0
+    }
+  }
+)
 </script>
 
 <template>
@@ -106,16 +290,24 @@ watch(
 
     <!-- Main content -->
     <div class="lightbox-body">
-      <div class="media-stage">
+      <div class="media-stage" ref="mediaContainer">
         <div
           class="media-container"
           @pointerdown="onPointerDown"
           @pointermove="onPointerMove"
           @pointerup="onPointerUp"
           @pointercancel="onPointerUp"
+          @wheel.prevent="onWheel"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
+          :style="{ transform: `scale(${scale}) translate(${translateX}px, ${translateY}px)`, cursor}"
         >
           <template v-if="item.type === 'image'">
-            <img :src="src" />
+            <img
+              :src="src"
+              draggable="false"
+              @dragstart.prevent
+            />
           </template>
 
           <template v-else-if="item.type === 'video'">
@@ -236,8 +428,14 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: pan-y;
+  touch-action: none;
   overflow: hidden;
+}
+
+.media-container,
+.media-container * {
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .media-container img,
