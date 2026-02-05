@@ -1,5 +1,5 @@
 <script setup>
-import { ArrowLeft, Info } from 'lucide-vue-next'
+import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
@@ -106,29 +106,47 @@ watch(
 
     <!-- Main content -->
     <div class="lightbox-body">
+      <div class="media-stage">
+        <div
+          class="media-container"
+          @pointerdown="onPointerDown"
+          @pointermove="onPointerMove"
+          @pointerup="onPointerUp"
+          @pointercancel="onPointerUp"
+        >
+          <template v-if="item.type === 'image'">
+            <img :src="src" />
+          </template>
 
-      <div
-        class="media-container"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="onPointerUp"
-      >
-        <template v-if="item.type === 'image'">
-          <img :src="src" />
-        </template>
+          <template v-else-if="item.type === 'video'">
+            <video
+              ref="videoEl"
+              :src="item.src"
+              controls
+              autoplay
+              loop
+              playsinline
+              preload="metadata"
+            />
+          </template>
+        </div>
+        <!-- Navigation -->
+        <button
+          class="nav-btn nav-prev"
+          @click.stop="$emit('prev')"
+          aria-label="Previous"
+        >
+          <ChevronLeft :size="36" />
+        </button>
 
-        <template v-else-if="item.type === 'video'">
-          <video
-            ref="videoEl"
-            :src="item.src"
-            controls
-            autoplay
-            loop
-            playsinline
-            preload="metadata"
-          />
-        </template>
+        <!-- Right -->
+        <button
+          class="nav-btn nav-next"
+          @click.stop="$emit('next')"
+          aria-label="Next"
+        >
+          <ChevronRight :size="36" />
+        </button>
       </div>
 
       <aside v-if="showInfo" class="info-panel">
@@ -208,62 +226,94 @@ watch(
   flex: 1;
   display: flex;
   overflow: hidden;
+  height: calc(100vh - 56px);
 }
 
 .media-container {
-  flex: 1;
+  width: 100%;
+  height: 100%;
+
   display: flex;
   align-items: center;
   justify-content: center;
   touch-action: pan-y;
-
-  /* Important: prevent layout jumps */
   overflow: hidden;
-}
-
-.media-container img {
-  max-width: 95%;
-  max-height: 95%;
-  object-fit: contain;
-
-  animation: zoomIn 120ms ease-out;
-}
-
-.media-container video {
-  max-width: 95%;
-  max-height: 95%;
-
-  /* CRITICAL: keeps aspect ratio without cropping */
-  object-fit: contain;
-
-  /* Prevents weird inline gaps */
-  display: block;
-
-  /* Helps with mobile / Safari */
-  background: black;
 }
 
 .media-container img,
 .media-container video {
-  transition: opacity 120ms ease, transform 120ms ease;
-}
+  max-width: 100%;
+  max-height: 100%;
 
-.media-container video {
-  overscroll-behavior: contain;
-}
-
-.media-container video {
-  max-width: 98%;
-  max-height: 98%;
-}
-
-.image-container img {
-  max-width: 95%;
-  max-height: 95%;
   object-fit: contain;
+  display: block;
 
   animation: zoomIn 120ms ease-out;
 }
+
+.media-stage {
+  position: relative;
+  flex: 1;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 56px;
+  height: 56px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+
+  color: white;
+  cursor: pointer;
+
+  opacity: 0.65;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease,
+    transform 0.1s ease;
+
+  pointer-events: auto;
+}
+
+.nav-btn:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.nav-prev {
+  left: 16px;
+}
+
+.nav-next {
+  right: 16px;
+}
+
+@media (hover: none) {
+  .nav-btn {
+    display: none;
+  }
+}
+
 
 /* Info panel */
 .info-panel {
