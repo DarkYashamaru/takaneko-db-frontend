@@ -20,21 +20,23 @@ const props = defineProps({
   }
 })
 
-// Keep loading pages until the requested flat index exists or we run out of pages.
-// Returns true if index became available, false otherwise.
 async function ensureIndexLoaded(targetIndex) {
-  // Fast path: already there
-  if (targetIndex < flatItems.value.length) return true
+  let lastLength = flatItems.value.length
 
-  // Keep fetching while we need more pages
-  while (targetIndex >= flatItems.value.length && hasMore.value && !loadingMore.value) {
-    // load another page
+  while (targetIndex >= flatItems.value.length && hasMore.value) {
     await loadTimeline()
-    // loop will re-check whether the index is now available
+
+    // 🚨 No new items → backend gave us nothing new
+    if (flatItems.value.length === lastLength) {
+      break
+    }
+
+    lastLength = flatItems.value.length
   }
 
   return targetIndex < flatItems.value.length
 }
+
 
 
 const emit = defineEmits(['error', 'open', 'close', 'back'])
@@ -223,7 +225,17 @@ async function loadTimeline({ reset = false } = {}) {
       }))
     }))
 
-    days.value.push(...normalized)
+    // ✅ Deduplicate days AGAINST CURRENTLY LOADED DAYS
+    const existingDates = new Set(days.value.map(d => d.date))
+    const deduped = normalized.filter(group => {
+      if (existingDates.has(group.date)) return false
+      existingDates.add(group.date)
+      return true
+    })
+
+    // ✅ THIS is what actually grows the timeline
+    days.value.push(...deduped)
+
 
     // cursor handling (safe for later)
     cursor.value = res.next_cursor ?? null
@@ -363,7 +375,7 @@ watch(
     v-if="activeItem"
     :src="activeItem.src"
     :item="activeItem"
-    @close="() => { activeIndex = null; emit('close') }"
+    @close="() => { activeIndex.value = null; emit('close') }"
     @prev="showPrev"
     @next="showNext"
   />
