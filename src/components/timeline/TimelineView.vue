@@ -73,6 +73,12 @@ function openImage(item) {
   })
 }
 
+function closeLightbox() {
+  activeIndex.value = null
+  emit('close')
+}
+
+
 function showPrev() {
   if (activeIndex.value > 0) {
     const item = flatItems.value[activeIndex.value - 1]
@@ -375,7 +381,7 @@ watch(
     v-if="activeItem"
     :src="activeItem.src"
     :item="activeItem"
-    @close="() => { activeIndex.value = null; emit('close') }"
+    @close="closeLightbox"
     @prev="showPrev"
     @next="showNext"
   />
