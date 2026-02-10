@@ -5,7 +5,13 @@ import { MEDIA_BASE } from '@/config/urls'
 import TimelineDay from '@/components/timeline/TimelineDay.vue'
 import Lightbox from '@/components/Lightbox.vue'
 import { ArrowLeft } from 'lucide-vue-next'
+import { useRoute, useRouter } from 'vue-router'
 
+
+// Router logic
+const seekingPhoto = ref(false)
+const route = useRoute()
+const router = useRouter()
 
 const props = defineProps({
   apiQuery: {
@@ -14,10 +20,27 @@ const props = defineProps({
   }
 })
 
+// Keep loading pages until the requested flat index exists or we run out of pages.
+// Returns true if index became available, false otherwise.
+async function ensureIndexLoaded(targetIndex) {
+  // Fast path: already there
+  if (targetIndex < flatItems.value.length) return true
+
+  // Keep fetching while we need more pages
+  while (targetIndex >= flatItems.value.length && hasMore.value && !loadingMore.value) {
+    // load another page
+    await loadTimeline()
+    // loop will re-check whether the index is now available
+  }
+
+  return targetIndex < flatItems.value.length
+}
+
+
 const emit = defineEmits(['error', 'open', 'close', 'back'])
 
 const activeIndex = ref(null)
-const pendingNext = ref(false)
+const pendingIndex = ref(null)
 
 const loading = ref(true)
 const error = ref(null)
@@ -40,32 +63,67 @@ function preloadImage(src) {
 }
 
 function openImage(item) {
-  const index = flatItems.value.findIndex(i => i.id === item.id)
-  if (index !== -1) {
-    activeIndex.value = index
-    emit('open', item)
-  }
+  router.replace({
+    query: {
+      ...route.query,
+      photo: item.id
+    }
+  })
 }
 
 function showPrev() {
   if (activeIndex.value > 0) {
-    activeIndex.value--
+    const item = flatItems.value[activeIndex.value - 1]
+    router.replace({
+      query: {
+        ...route.query,
+        photo: item.id
+      }
+    })
   }
 }
 
-function showNext() {
-  // Normal case: next image already loaded
-  if (activeIndex.value < flatItems.value.length - 1) {
-    activeIndex.value++
+
+async function showNext() {
+  if (activeIndex.value == null) return
+
+  const targetIndex = activeIndex.value + 1
+
+  // Case 1: already loaded
+  if (targetIndex < flatItems.value.length) {
+    const item = flatItems.value[targetIndex]
+    router.replace({
+      query: { ...route.query, photo: item.id }
+    })
     return
   }
 
-  // Edge case: at end, but more data exists
+  // Case 2: need more data — ensure we load until the target exists (or we can't)
   if (hasMore.value && !loadingMore.value) {
-    pendingNext.value = true
-    loadTimeline()
+    // mark intent (optional — you can use this for UI)
+    pendingIndex.value = targetIndex
+
+    const ok = await ensureIndexLoaded(targetIndex)
+
+    // clear intent
+    pendingIndex.value = null
+
+    if (ok) {
+      // item is now loaded — update URL to open it
+      const item = flatItems.value[targetIndex]
+      router.replace({
+        query: { ...route.query, photo: item.id }
+      })
+    } else {
+      // ran out of pages — nothing to do (optionally show toast)
+      // console.warn('Desired index not found, no more pages')
+    }
   }
 }
+
+
+
+
 
 const timelineByYear = computed(() => {
   const map = {}
@@ -153,6 +211,8 @@ async function loadTimeline({ reset = false } = {}) {
     // 🔽 TEMP: support both paged and non-paged backends
     const newGroups = Array.isArray(res) ? res : res.items
 
+    //console.log(res.items[0].items[0].faces[0].bbox)
+
     const normalized = newGroups.map(group => ({
       ...group,
       year: new Date(group.date).getFullYear(),
@@ -196,18 +256,53 @@ watch(activeIndex, (index) => {
   if (next) preloadImage(fullImageUrl(next.thumbnail))
 })
 
+// watch(
+//   () => flatItems.value.length,
+//   () => {
+//     if (
+//       pendingNext.value &&
+//       activeIndex.value < flatItems.value.length - 1
+//     ) {
+//       pendingNext.value = false
+//       activeIndex.value++
+//     }
+//   }
+// )
+
 watch(
-  () => flatItems.value.length,
-  () => {
-    if (
-      pendingNext.value &&
-      activeIndex.value < flatItems.value.length - 1
-    ) {
-      pendingNext.value = false
-      activeIndex.value++
+  [() => route.query.photo, () => flatItems.value],
+  async ([photoId, items]) => {
+    if (!photoId) {
+      activeIndex.value = null
+      seekingPhoto.value = false
+      return
     }
-  }
+
+    if (!items.length) return
+
+    const index = items.findIndex(
+      item => String(item.id) === String(photoId)
+    )
+
+    if (index !== -1) {
+      activeIndex.value = index
+      seekingPhoto.value = false
+      return
+    }
+
+    // ❗ Not found yet → try loading more
+    if (hasMore.value && !loadingMore.value) {
+      seekingPhoto.value = true
+      await loadTimeline()
+    } else {
+      // Not found & no more pages
+      seekingPhoto.value = false
+      activeIndex.value = null
+    }
+  },
+  { immediate: true }
 )
+
 </script>
 
 <template>

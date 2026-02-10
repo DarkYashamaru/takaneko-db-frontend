@@ -1,6 +1,8 @@
 <script setup>
 import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { getIdolFaceImageBySlug, getIdolNameBySlug } from '@/data/idols'
+import { MEDIA_BASE } from '@/config/urls'
 
 const props = defineProps({
   src: String,
@@ -12,6 +14,48 @@ const startY = ref(0)
 const deltaX = ref(0)
 const deltaY = ref(0)
 const isSwiping = ref(false)
+
+// ===== face overlay logic =========
+const hoveredFace = ref(null)
+
+const mainImage = ref(null)
+
+const faceBoxStyle = computed(() => {
+  if (!hoveredFace.value || !mainImage.value) return {}
+
+  const img = mainImage.value
+  const imgRect = img.getBoundingClientRect()
+  const wrapper = img.parentElement // image-wrapper
+  if (!wrapper) return {}
+
+  const wrapperRect = wrapper.getBoundingClientRect()
+
+  const naturalW = img.naturalWidth
+  const naturalH = img.naturalHeight
+  if (!naturalW || !naturalH) return {}
+
+  const renderedW = imgRect.width
+  const renderedH = imgRect.height
+
+  const { x, y, width, height } = hoveredFace.value.bbox
+
+  // position of the image's top-left inside the wrapper (in px)
+  const imgLeftInWrapper = imgRect.left - wrapperRect.left
+  const imgTopInWrapper = imgRect.top - wrapperRect.top
+
+  const left = imgLeftInWrapper + (x / naturalW) * renderedW
+  const top = imgTopInWrapper + (y / naturalH) * renderedH
+  const w = (width / naturalW) * renderedW
+  const h = (height / naturalH) * renderedH
+
+  return {
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${w}px`,
+    height: `${h}px`,
+    position: 'absolute'
+  }
+})
 
 // ===== zoom/ pan logic ============
 const scale = ref(1)
@@ -305,6 +349,7 @@ watch(
           <template v-if="item.type === 'image'">
             <img
               :src="src"
+              ref="mainImage"
               draggable="false"
               @dragstart.prevent
             />
@@ -322,6 +367,15 @@ watch(
             />
           </template>
         </div>
+
+        <!-- 🔴 FACE OVERLAY -->
+        <div
+          v-if="hoveredFace"
+          class="face-box"
+          :style="faceBoxStyle"
+          aria-hidden="true"
+        />
+
         <!-- Navigation -->
         <button
           class="nav-btn nav-prev"
@@ -369,6 +423,27 @@ watch(
         <div>
           <p>{{ item.description }}</p>
         </div>
+          <h2>Idols</h2>
+          <div class="Idols-apperances">
+            <div
+              v-for="(face, index) in item.faces"
+              :key="`${face.idol_slug}-${index}`"
+              class="idol-face"
+              @mouseenter="hoveredFace = face"
+              @mouseleave="hoveredFace = null"
+            >
+              <img
+                :src="`${MEDIA_BASE}${getIdolFaceImageBySlug(face.idol_slug)}`"
+                :alt="face.idol_slug"
+                width="100"
+                height="100"
+                draggable="false"
+              />
+              <div class="idol-label">
+                {{getIdolNameBySlug(face.idol_slug)}}
+              </div>
+            </div>
+          </div>
       </aside>
     </div>
 
@@ -584,5 +659,34 @@ watch(
 .icon-btn:active {
   transform: scale(0.96);
 }
+
+.face-box {
+  border: 2px solid #4da3ff;
+  border-radius: 4px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.0);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.Idols-apperances {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.idol-face {
+  text-align: center;
+}
+
+.idol-label {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
 
 </style>
