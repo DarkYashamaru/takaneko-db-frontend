@@ -37,8 +37,6 @@ async function ensureIndexLoaded(targetIndex) {
   return targetIndex < flatItems.value.length
 }
 
-
-
 const emit = defineEmits(['error', 'open', 'close', 'back'])
 
 const activeIndex = ref(null)
@@ -129,10 +127,6 @@ async function showNext() {
   }
 }
 
-
-
-
-
 const timelineByYear = computed(() => {
   const map = {}
 
@@ -165,13 +159,22 @@ let observer = null
 
 onMounted(() => {
   observer = new IntersectionObserver(
-    ([entry]) => {
-      if (entry.isIntersecting) {
-        loadTimeline()
+    async ([entry]) => {
+      if (!entry.isIntersecting) return
+      if (loadingMore.value || !hasMore.value) return
+
+      // Temporarily unobserve to avoid re-trigger spam
+      observer.unobserve(entry.target)
+
+      await loadTimeline()
+
+      // Re-observe after DOM grows
+      if (sentinel.value && hasMore.value) {
+        observer.observe(sentinel.value)
       }
     },
     {
-      rootMargin: '800px'
+      threshold: 0.25 // 25% of sentinel visible
     }
   )
 
@@ -180,12 +183,48 @@ onMounted(() => {
   }
 })
 
+
+// onMounted(() => {
+//   console.log('onMounted — sentinel currently:', sentinel.value)
+//   observer = new IntersectionObserver(([entry]) => {
+//     console.log('IO callback — intersecting?', entry.isIntersecting, 'entry:', entry)
+//     if (entry.isIntersecting) loadTimeline()
+//   }, { rootMargin: '800px' })
+//   if (sentinel.value) {
+//     console.log('observing sentinel initially')
+//     observer.observe(sentinel.value)
+//   } else {
+//     console.log('no sentinel at mount')
+//   }
+// })
+
+// watch(() => sentinel.value, (el) => console.log('sentinel changed:', el))
+
 onUnmounted(() => {
   observer?.disconnect()
 })
 
-async function loadTimeline({ reset = false } = {}) {
+let observedEl = null
 
+watch(
+  () => sentinel.value,
+  (el) => {
+    if (!observer) return
+    if (observedEl) {
+      try { observer.unobserve(observedEl) } catch (e) { /* ignore */ }
+      observedEl = null
+    }
+    if (el) {
+      observer.observe(el)
+      observedEl = el
+    }
+  },
+  { immediate: true }
+)
+
+
+async function loadTimeline({ reset = false } = {}) {
+  console.log('loadTimeline called', { reset, cursor: cursor.value, loadingMore: loadingMore.value, hasMore: hasMore.value })
   if (!reset && loadingMore.value) return
 
   const effectiveCursor = reset ? null : cursor.value
@@ -247,6 +286,9 @@ async function loadTimeline({ reset = false } = {}) {
     cursor.value = res.next_cursor ?? null
     hasMore.value = Boolean(res.next_cursor)
 
+    console.log('API returned next_cursor:', res.next_cursor)
+    console.log('cursor set to:', cursor.value, 'hasMore:', hasMore.value)
+
   } catch (err) {
     error.value = err.message
     emit('error', err)
@@ -273,19 +315,6 @@ watch(activeIndex, (index) => {
   if (prev) preloadImage(fullImageUrl(prev.thumbnail))
   if (next) preloadImage(fullImageUrl(next.thumbnail))
 })
-
-// watch(
-//   () => flatItems.value.length,
-//   () => {
-//     if (
-//       pendingNext.value &&
-//       activeIndex.value < flatItems.value.length - 1
-//     ) {
-//       pendingNext.value = false
-//       activeIndex.value++
-//     }
-//   }
-// )
 
 watch(
   [() => route.query.photo, () => flatItems.value],
@@ -419,7 +448,7 @@ watch(
 }
 
 .scroll-sentinel {
-  height: 1px;
+  height: 20vh; /* relative to viewport */
 }
 
 .loading-more,
