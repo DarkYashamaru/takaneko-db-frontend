@@ -224,7 +224,7 @@ watch(
 
 
 async function loadTimeline({ reset = false } = {}) {
-  console.log('loadTimeline called', { reset, cursor: cursor.value, loadingMore: loadingMore.value, hasMore: hasMore.value })
+  //console.log('loadTimeline called', { reset, cursor: cursor.value, loadingMore: loadingMore.value, hasMore: hasMore.value })
   if (!reset && loadingMore.value) return
 
   const effectiveCursor = reset ? null : cursor.value
@@ -286,8 +286,8 @@ async function loadTimeline({ reset = false } = {}) {
     cursor.value = res.next_cursor ?? null
     hasMore.value = Boolean(res.next_cursor)
 
-    console.log('API returned next_cursor:', res.next_cursor)
-    console.log('cursor set to:', cursor.value, 'hasMore:', hasMore.value)
+    //console.log('API returned next_cursor:', res.next_cursor)
+    //console.log('cursor set to:', cursor.value, 'hasMore:', hasMore.value)
 
   } catch (err) {
     error.value = err.message
