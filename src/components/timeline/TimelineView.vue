@@ -26,7 +26,7 @@ async function ensureIndexLoaded(targetIndex) {
   while (targetIndex >= flatItems.value.length && hasMore.value) {
     await loadTimeline()
 
-    // 🚨 No new items → backend gave us nothing new
+    // No new items → backend gave us nothing new
     if (flatItems.value.length === lastLength) {
       break
     }
@@ -182,23 +182,6 @@ onMounted(() => {
     observer.observe(sentinel.value)
   }
 })
-
-
-// onMounted(() => {
-//   console.log('onMounted — sentinel currently:', sentinel.value)
-//   observer = new IntersectionObserver(([entry]) => {
-//     console.log('IO callback — intersecting?', entry.isIntersecting, 'entry:', entry)
-//     if (entry.isIntersecting) loadTimeline()
-//   }, { rootMargin: '800px' })
-//   if (sentinel.value) {
-//     console.log('observing sentinel initially')
-//     observer.observe(sentinel.value)
-//   } else {
-//     console.log('no sentinel at mount')
-//   }
-// })
-
-// watch(() => sentinel.value, (el) => console.log('sentinel changed:', el))
 
 onUnmounted(() => {
   observer?.disconnect()

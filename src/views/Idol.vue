@@ -1,6 +1,6 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, computed } from 'vue'
 import TimelineView from '@/components/timeline/TimelineView.vue'
 
 const route = useRoute()
@@ -18,10 +18,16 @@ watch(
   }
 )
 
-const apiQuery = {
-  type: 'idol',
-  slug: route.params.slug,
-}
+const apiQuery = computed(() => {
+  const query = { ...route.query }
+
+  // If you still want slug to act as idol
+  if (route.params.slug) {
+    query.idol = route.params.slug
+  }
+
+  return query
+})
 
 function onOpen(item) {
   router.replace({
@@ -42,7 +48,6 @@ function onError(err) {
     router.replace({ name: 'NotFound' })
   }
 }
-
 
 </script>
 
