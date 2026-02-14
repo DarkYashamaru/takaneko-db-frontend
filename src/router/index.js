@@ -9,6 +9,7 @@ export default createRouter({
     { path: '/search', component: () => import('@/views/Search.vue') },
     { path: '/idol/:slug', component: () => import('@/views/Idol.vue') },
     { path: '/idol/by-face/:slug', component: () => import('@/views/IdolByFace.vue') },
+    { path: '/search/', component: () => import('@/views/SearchResults.vue') },
     { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFound.vue')}
   ],
 

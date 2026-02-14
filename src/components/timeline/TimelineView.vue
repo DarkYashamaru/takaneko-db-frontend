@@ -226,16 +226,30 @@ async function loadTimeline({ reset = false } = {}) {
 
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
-  const params = new URLSearchParams({
-  ...props.apiQuery,
-  tz: timezone,
-  })
+  const params = new URLSearchParams()
 
-    if (cursor.value) {
-    params.append('cursor', cursor.value)
+  // append apiQuery safely
+  for (const key in props.apiQuery) {
+    const value = props.apiQuery[key]
+
+    if (Array.isArray(value)) {
+      value.forEach(v => params.append(key, v))
+    } else if (value != null) {
+      params.append(key, value)
     }
+  }
+
+  // always append timezone
+  params.append('tz', timezone)
+
+  // cursor
+  if (cursor.value) {
+    params.append('cursor', cursor.value)
+  }
 
   try {
+
+    //console.log(`/timeline?${params.toString()}`)
     const res = await apiGet(`/timeline?${params.toString()}`)
 
     // 🔽 TEMP: support both paged and non-paged backends

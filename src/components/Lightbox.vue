@@ -3,6 +3,9 @@ import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { getIdolFaceImageBySlug, getIdolNameBySlug } from '@/data/idols'
 import { MEDIA_BASE } from '@/config/urls'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = defineProps({
   src: String,
@@ -283,6 +286,10 @@ function onKey(e) {
   }
 }
 
+function openIdolByFace(slug) {
+  router.push("/idol/by-face/"+slug)
+}
+
 onMounted(() => {
   document.body.style.overflow = 'hidden'
   window.addEventListener('keydown', onKey)
@@ -432,13 +439,15 @@ watch(
               @mouseenter="hoveredFace = face"
               @mouseleave="hoveredFace = null"
             >
-              <img
-                :src="`${MEDIA_BASE}${getIdolFaceImageBySlug(face.idol_slug)}`"
-                :alt="face.idol_slug"
-                width="100"
-                height="100"
-                draggable="false"
-              />
+              <button @click="openIdolByFace(face.idol_slug)">
+                <img
+                  :src="`${MEDIA_BASE}${getIdolFaceImageBySlug(face.idol_slug)}`"
+                  :alt="face.idol_slug"
+                  width="100"
+                  height="100"
+                  draggable="false"
+                />
+              </button>
               <div class="idol-label">
                 {{getIdolNameBySlug(face.idol_slug)}}
               </div>

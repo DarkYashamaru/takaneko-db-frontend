@@ -23,7 +23,6 @@ const apiQuery = computed(() => {
 
   // If you still want slug to act as idol
   if (route.params.slug) {
-    query.face = route.params.slug
   }
 
   return query

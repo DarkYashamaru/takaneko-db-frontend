@@ -10,6 +10,7 @@
     "format": "oxfmt src/"
   },
   "dependencies": {
+    "@vuepic/vue-datepicker": "^12.1.0",
     "lucide-vue-next": "^0.563.0",
     "vue": "^3.5.27",
     "vue-router": "^4.6.4"
