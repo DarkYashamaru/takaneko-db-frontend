@@ -9,7 +9,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 
 // Router logic
-const seekingPhoto = ref(false)
 const route = useRoute()
 const router = useRouter()
 
@@ -20,10 +19,11 @@ const props = defineProps({
   }
 })
 
+const photoId = computed(() => route.query.photo)
+
 const emit = defineEmits(['error', 'open', 'close', 'back'])
 
 const activeIndex = ref(null)
-const pendingIndex = ref(null)
 
 const loading = ref(true)
 const error = ref(null)
@@ -33,23 +33,11 @@ const cursor = ref(null)
 const hasMore = ref(true)
 const loadingMore = ref(false)
 
-function fullImageUrl(thumbnailUrl) {
-  return thumbnailUrl
-    .replace('/thumbnails/200/', '/')
-    .replace('.webp', '.jpg')
-}
-
-function preloadImage(src) {
-  if (!src) return
-  const img = new Image()
-  img.src = src
-}
-
-function updateActiveIndex(item)
+function updateActiveIndex(id)
 {
   for (let i = 0; i < flatItems.value.length; i++) 
   {
-    if (String(item.id) === String(flatItems.value[i].id))
+    if (String(id) === String(flatItems.value[i].id))
     {
       activeIndex.value = i;
       return;
@@ -57,15 +45,27 @@ function updateActiveIndex(item)
   }
 }
 
+function getIndexFromId(id)
+{
+  for (let i = 0; i < flatItems.value.length; i++) 
+  {
+    if (String(id) === String(flatItems.value[i].id))
+    {
+      return i;
+    }
+  }
+  return -1
+}
+
 function openImage(item) {
-  console.log("Open Image", item.id)
+  //console.log("Open Image", item.id)
   router.replace({
     query: {
       ...route.query,
       photo: item.id
     }
   })
-  updateActiveIndex(item)
+  updateActiveIndex(item.id)
 }
 
 function closeLightbox() {
@@ -75,7 +75,7 @@ function closeLightbox() {
 
 
 function showPrev() {
-  console.log(activeIndex.value)
+  //console.log(activeIndex.value)
 
   if (activeIndex.value > 0) {
     const item = flatItems.value[activeIndex.value - 1]
@@ -85,28 +85,22 @@ function showPrev() {
         photo: item.id
       }
     })
-    updateActiveIndex(item)
+    updateActiveIndex(item.id)
   }
 }
 
 async function showNext() {
-  console.log("Active Index:",activeIndex.value)
-  console.log("Flat items amout",flatItems.value.length)
   if (activeIndex.value == null) return
 
   const targetIndex = activeIndex.value + 1
-
-  console.log("Target Index:",targetIndex)
-
-  // Case 1: already loaded
+  
   if (targetIndex < flatItems.value.length) {
-    console.log("Already loaded")
     const item = flatItems.value[targetIndex]
     router.replace({
       query: { ...route.query, photo: item.id }
     })
 
-    updateActiveIndex(item)
+    updateActiveIndex(item.id)
     return
   }
 
@@ -147,7 +141,25 @@ const activeItem = computed(() => {
 const sentinel = ref(null)
 let observer = null
 
-onMounted(() => {
+async function loadStartingPictureInLightbox() 
+{
+  let index = -1;
+  do 
+  {
+    await loadTimeline()
+    index = getIndexFromId(route.query.photo)
+  } while (index === -1);
+
+  updateActiveIndex(route.query.photo)
+}
+
+onMounted(() => 
+{
+  if(route.query.photo)
+  {
+    loadStartingPictureInLightbox()
+  }
+
   observer = new IntersectionObserver(
     async ([entry]) => {
       if (!entry.isIntersecting) return
