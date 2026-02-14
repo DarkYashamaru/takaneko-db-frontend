@@ -20,23 +20,6 @@ const props = defineProps({
   }
 })
 
-async function ensureIndexLoaded(targetIndex) {
-  let lastLength = flatItems.value.length
-
-  while (targetIndex >= flatItems.value.length && hasMore.value) {
-    await loadTimeline()
-
-    // No new items → backend gave us nothing new
-    if (flatItems.value.length === lastLength) {
-      break
-    }
-
-    lastLength = flatItems.value.length
-  }
-
-  return targetIndex < flatItems.value.length
-}
-
 const emit = defineEmits(['error', 'open', 'close', 'back'])
 
 const activeIndex = ref(null)
@@ -62,13 +45,27 @@ function preloadImage(src) {
   img.src = src
 }
 
+function updateActiveIndex(item)
+{
+  for (let i = 0; i < flatItems.value.length; i++) 
+  {
+    if (String(item.id) === String(flatItems.value[i].id))
+    {
+      activeIndex.value = i;
+      return;
+    }
+  }
+}
+
 function openImage(item) {
+  console.log("Open Image", item.id)
   router.replace({
     query: {
       ...route.query,
       photo: item.id
     }
   })
+  updateActiveIndex(item)
 }
 
 function closeLightbox() {
@@ -78,6 +75,8 @@ function closeLightbox() {
 
 
 function showPrev() {
+  console.log(activeIndex.value)
+
   if (activeIndex.value > 0) {
     const item = flatItems.value[activeIndex.value - 1]
     router.replace({
@@ -86,44 +85,35 @@ function showPrev() {
         photo: item.id
       }
     })
+    updateActiveIndex(item)
   }
 }
 
-
 async function showNext() {
+  console.log("Active Index:",activeIndex.value)
+  console.log("Flat items amout",flatItems.value.length)
   if (activeIndex.value == null) return
 
   const targetIndex = activeIndex.value + 1
 
+  console.log("Target Index:",targetIndex)
+
   // Case 1: already loaded
   if (targetIndex < flatItems.value.length) {
+    console.log("Already loaded")
     const item = flatItems.value[targetIndex]
     router.replace({
       query: { ...route.query, photo: item.id }
     })
+
+    updateActiveIndex(item)
     return
   }
 
-  // Case 2: need more data — ensure we load until the target exists (or we can't)
-  if (hasMore.value && !loadingMore.value) {
-    // mark intent (optional — you can use this for UI)
-    pendingIndex.value = targetIndex
-
-    const ok = await ensureIndexLoaded(targetIndex)
-
-    // clear intent
-    pendingIndex.value = null
-
-    if (ok) {
-      // item is now loaded — update URL to open it
-      const item = flatItems.value[targetIndex]
-      router.replace({
-        query: { ...route.query, photo: item.id }
-      })
-    } else {
-      // ran out of pages — nothing to do (optionally show toast)
-      // console.warn('Desired index not found, no more pages')
-    }
+  if(targetIndex >= flatItems.value.length && hasMore.value && !loadingMore.value)
+  {
+    await loadTimeline()
+    showNext()
   }
 }
 
@@ -210,8 +200,6 @@ async function loadTimeline({ reset = false } = {}) {
   //console.log('loadTimeline called', { reset, cursor: cursor.value, loadingMore: loadingMore.value, hasMore: hasMore.value })
   if (!reset && loadingMore.value) return
 
-  const effectiveCursor = reset ? null : cursor.value
-
   if (loadingMore.value || (!hasMore.value && !reset)) return
 
   if (reset) {
@@ -249,15 +237,10 @@ async function loadTimeline({ reset = false } = {}) {
 
   try {
 
-    //console.log(`/timeline?${params.toString()}`)
+    console.log(`/timeline?${params.toString()}`)
     const res = await apiGet(`/timeline?${params.toString()}`)
 
-    // 🔽 TEMP: support both paged and non-paged backends
-    const newGroups = Array.isArray(res) ? res : res.items
-
-    //console.log(res.items[0].items[0].faces[0].bbox)
-
-    const normalized = newGroups.map(group => ({
+    const normalized = res.items.map(group => ({
       ...group,
       year: new Date(group.date).getFullYear(),
       items: group.items.map(item => ({
@@ -283,9 +266,6 @@ async function loadTimeline({ reset = false } = {}) {
     cursor.value = res.next_cursor ?? null
     hasMore.value = Boolean(res.next_cursor)
 
-    //console.log('API returned next_cursor:', res.next_cursor)
-    //console.log('cursor set to:', cursor.value, 'hasMore:', hasMore.value)
-
   } catch (err) {
     error.value = err.message
     emit('error', err)
@@ -294,58 +274,6 @@ async function loadTimeline({ reset = false } = {}) {
     loadingMore.value = false
   }
 }
-
-watch(
-  () => props.apiQuery,
-  () => {
-    loadTimeline({ reset: true })
-  },
-  { deep: true, immediate: true }
-)
-
-watch(activeIndex, (index) => {
-  if (index === null) return
-
-  const prev = flatItems.value[index - 1]
-  const next = flatItems.value[index + 1]
-
-  if (prev) preloadImage(fullImageUrl(prev.thumbnail))
-  if (next) preloadImage(fullImageUrl(next.thumbnail))
-})
-
-watch(
-  [() => route.query.photo, () => flatItems.value],
-  async ([photoId, items]) => {
-    if (!photoId) {
-      activeIndex.value = null
-      seekingPhoto.value = false
-      return
-    }
-
-    if (!items.length) return
-
-    const index = items.findIndex(
-      item => String(item.id) === String(photoId)
-    )
-
-    if (index !== -1) {
-      activeIndex.value = index
-      seekingPhoto.value = false
-      return
-    }
-
-    // ❗ Not found yet → try loading more
-    if (hasMore.value && !loadingMore.value) {
-      seekingPhoto.value = true
-      await loadTimeline()
-    } else {
-      // Not found & no more pages
-      seekingPhoto.value = false
-      activeIndex.value = null
-    }
-  },
-  { immediate: true }
-)
 
 </script>
 

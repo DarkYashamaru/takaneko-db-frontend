@@ -35,10 +35,6 @@ const platforms = [
   { label: 'TikTok', value: 'tiktok' }
 ]
 
-function formatDate(date) {
-  return date?.toISOString().split('T')[0]
-}
-
 function submitSearch() {
   const query = {}
 
@@ -51,11 +47,11 @@ function submitSearch() {
   }
 
   if (since.value) {
-    query.since = formatDate(since.value)
+    query.since = since.value
   }
 
   if (until.value) {
-    query.until = formatDate(until.value)
+    query.until = until.value
   }
 
   if (platform.value) {
@@ -81,24 +77,28 @@ function submitSearch() {
       <div class="date-row">
         <div class="date-field">
           <span>Start date</span>
-          <VueDatePicker
-            v-model="since"
-            dark
-            :enable-time-picker="false"
-            format="yyyy-MM-dd"
-            :max-date="until"
-          />
+            <VueDatePicker
+              v-model="since"
+              dark
+              :enable-time-picker="false"
+              :auto-apply="true"
+              format="yyyy-MM-dd"
+              model-type="yyyy-MM-dd"
+              :max-date="until"
+            />
         </div>
 
         <div class="date-field">
           <span>End date</span>
-          <VueDatePicker
-            v-model="until"
-            dark
-            :enable-time-picker="false"
-            format="yyyy-MM-dd"
-            :min-date="since"
-          />
+            <VueDatePicker
+              v-model="until"
+              dark
+              :enable-time-picker="false"
+              :auto-apply="true"
+              format="yyyy-MM-dd"
+              model-type="yyyy-MM-dd"
+              :min-date="since"
+            />
         </div>
       </div>
     </section>
@@ -246,34 +246,43 @@ select {
 
 .face-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
-  width: 100%;
 }
 
+@media (min-width: 600px) {
+  .face-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  }
+}
 
 .face-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
 
-  padding: 0.5rem;
-  border-radius: 12px;
-  cursor: pointer;
+  padding: 0.75rem 0.5rem;
+  border-radius: 16px;
 
   background: #1a1a1a;
   border: 1px solid transparent;
   transition: all 0.2s ease;
-  aspect-ratio: 1 / 1.2;
 }
 
 .face-card img {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
   border-radius: 50%;
   transition: transform 0.2s ease;
+}
+
+@media (min-width: 600px) {
+  .face-card img {
+    width: 72px;
+    height: 72px;
+  }
 }
 
 .face-card span {

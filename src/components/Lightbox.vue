@@ -163,9 +163,7 @@ function onWheel(e) {
 function onPointerDown(e) 
 {
   e.preventDefault()
-  console.log("onPointerDown")
-  console.log(containerRect.value.height, containerRect.value.width)
-
+  
   //if (props.item.type !== 'image') return
 
   if (scale.value > 1) {
@@ -188,7 +186,6 @@ function onPointerDown(e)
 
 function onPointerUp(e) 
 {
-  console.log("onPointerUp")
 
   if (isPanning.value) {
     e.currentTarget.releasePointerCapture(e.pointerId)
@@ -217,7 +214,6 @@ function onPointerUp(e)
 }
 
 function onPointerMove(e) {
-  console.log("onPointerMove")
   if (isPanning.value) 
   {
     const dx = e.clientX - lastX
@@ -231,7 +227,6 @@ function onPointerMove(e) {
 
     lastX = e.clientX
     lastY = e.clientY
-    console.log({ nextX, nextY, translateX: translateX.value, scale: scale.value})
     return
   }
 
@@ -240,10 +235,6 @@ function onPointerMove(e) {
   deltaX.value = e.clientX - startX.value
   deltaY.value = e.clientY - startY.value
 }
-
-watch(isPanning, (val, oldVal) => {
-  console.log('[isPanning]', oldVal, '→', val)
-})
 
 function onTouchMove(e) {
   if (e.touches.length !== 2) return
