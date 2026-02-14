@@ -1,19 +1,37 @@
 <script setup>
-defineProps({
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+
+const route = useRoute()
+
+const props = defineProps({
   item: Object
 })
-const emit = defineEmits(['open'])
+
+const photoUrl = computed(() => {
+  return {
+    path: route.path,
+    query: {
+      ...route.query,
+      photo: props.item.id
+    }
+  }
+})
+
 </script>
 
 <template>
-  <div class="timeline-item" tabindex="0" @click="emit('open', item)">
+  <router-link
+    class="timeline-item"
+    :to="photoUrl"
+  >
     <img
       :src="item.thumbnail"
       loading="lazy"
       draggable="false"
     />
     <span v-if="item.type === 'video'" class="play-badge">▶</span>
-  </div>
+  </router-link>
 </template>
 
 <style scoped>

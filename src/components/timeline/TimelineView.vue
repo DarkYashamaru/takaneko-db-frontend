@@ -57,6 +57,14 @@ function getIndexFromId(id)
   return -1
 }
 
+watch(
+  () => route.query.photo,
+  (newPhoto) => {
+    console.log('Photo changed:', newPhoto)
+    updateActiveIndex(newPhoto)
+  }
+)
+
 function openImage(item) {
   //console.log("Open Image", item.id)
   router.replace({
@@ -65,7 +73,6 @@ function openImage(item) {
       photo: item.id
     }
   })
-  updateActiveIndex(item.id)
 }
 
 function closeLightbox() {
@@ -73,10 +80,28 @@ function closeLightbox() {
   emit('close')
 }
 
+// Preload previous and next pictures logic
+
+function preloadImage(src) {
+  if (!src) return
+  const img = new Image()
+  img.src = src
+}
+
+watch(activeIndex, (index) => {
+  if (index == null) return
+
+  const offsets = [-2, -1, 1, 2]
+
+  offsets.forEach(offset => {
+    const item = flatItems.value[index + offset]
+    if (item) preloadImage(item.src)
+  })
+})
+
+//Show next and previous picture
 
 function showPrev() {
-  //console.log(activeIndex.value)
-
   if (activeIndex.value > 0) {
     const item = flatItems.value[activeIndex.value - 1]
     router.replace({
@@ -85,7 +110,6 @@ function showPrev() {
         photo: item.id
       }
     })
-    updateActiveIndex(item.id)
   }
 }
 
@@ -93,14 +117,12 @@ async function showNext() {
   if (activeIndex.value == null) return
 
   const targetIndex = activeIndex.value + 1
-  
+
   if (targetIndex < flatItems.value.length) {
     const item = flatItems.value[targetIndex]
     router.replace({
       query: { ...route.query, photo: item.id }
     })
-
-    updateActiveIndex(item.id)
     return
   }
 
