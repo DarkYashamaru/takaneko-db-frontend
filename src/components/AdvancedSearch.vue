@@ -14,6 +14,7 @@ const until = ref(null)
 const selectedFaces = ref([])
 const platform = ref('')
 const postedBy = ref('')
+const context = ref('')
 
 // Temporary static list (replace later with API data)
 const slugs = [
@@ -38,6 +39,10 @@ const platforms = [
 function submitSearch() {
   const query = {}
 
+  if (context.value?.trim()) {
+    query.context = context.value.trim()
+  }
+
   if (postedBy.value) {
   query.idol = postedBy.value
   }
@@ -58,6 +63,8 @@ function submitSearch() {
     query.platform = platform.value
   }
 
+  console.log("Query: ",query)
+
   router.push({
     path: '/search',
     query
@@ -69,6 +76,16 @@ function submitSearch() {
 <template>
   <main class="container">
     <h1>Advanced Search</h1>
+
+    <section class="filter-group">
+      <label>Context</label>
+      <input
+        v-model="context"
+        type="text"
+        placeholder="e.g. beach, live performance, white dress..."
+        class="context-input"
+      />
+    </section>
 
     <!-- Date Range -->
     <section class="filter-group">
@@ -302,6 +319,16 @@ select {
 .face-card.active img {
   transform: scale(1.05);
 }
+
+.context-input {
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
 
 
 </style>

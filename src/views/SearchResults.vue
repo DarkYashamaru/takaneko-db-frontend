@@ -20,11 +20,6 @@ watch(
 
 const apiQuery = computed(() => {
   const query = { ...route.query }
-
-  // If you still want slug to act as idol
-  if (route.params.slug) {
-  }
-
   return query
 })
 
@@ -47,8 +42,6 @@ function onError(err) {
     router.replace({ name: 'NotFound' })
   }
 }
-
-
 </script>
 
 <template>
