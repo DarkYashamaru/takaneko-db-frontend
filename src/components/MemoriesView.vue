@@ -36,6 +36,7 @@ const activeGroup = ref(null)
 
 async function load() {
   const res = await apiGet('/memories')
+  console.log(res)
   groups.value = res.items.map(g => ({
     ...g,
     items: g.items.map(i => ({

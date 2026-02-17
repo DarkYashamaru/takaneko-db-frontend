@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, onMounted, onUnmounted } from 'vue'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
+import '@/composables/lightbox.css'
 
 const props = defineProps({
   items: Array,
@@ -10,6 +11,22 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const index = ref(0)
+const videoEl = ref(null)
+
+function onKey(e) {
+  if (e.key === 'Escape')
+  {
+    emit('close')
+  }
+  else if (e.key === 'ArrowLeft')
+  {
+    prev()
+  }
+  else if (e.key === 'ArrowRight')
+  {
+    next()   
+  }
+}
 
 function next() {
   if (index.value < props.items.length - 1) {
@@ -24,9 +41,16 @@ function prev() {
 }
 
 watch(index, () => {
-  resetProgress()
+  cancelAnimationFrame(animationFrame)
+
+  if (videoEl.value) {
+    videoEl.value.pause()
+    videoEl.value.currentTime = 0
+  }
+
   startProgress()
 })
+
 
 const progress = ref(0) // 0 → 100
 let animationFrame = null
@@ -35,26 +59,24 @@ let durationMs = 4000
 
 function startProgress() {
   cancelAnimationFrame(animationFrame)
+  progress.value = 0
 
   const item = props.items[index.value]
-
   if (!item) return
 
-  // Image duration
+  // IMAGE
   if (item.type === 'image') {
     durationMs = 4000
+    startTime = null
+    animationFrame = requestAnimationFrame(animate)
   }
 
-  // Video duration
+  // VIDEO
   if (item.type === 'video') {
-    durationMs = 4000 // temporary fallback
+    // wait for metadata event instead
   }
-
-  progress.value = 0
-  startTime = null
-
-  animationFrame = requestAnimationFrame(animate)
 }
+
 
 function animate(timestamp) {
   if (!startTime) startTime = timestamp
@@ -71,6 +93,17 @@ function animate(timestamp) {
   }
 }
 
+function onVideoLoaded() {
+  if (!videoEl.value) return
+  progress.value = 0
+}
+
+function onVideoTimeUpdate() {
+  const video = videoEl.value
+  if (!video || !video.duration) return
+
+  progress.value = (video.currentTime / video.duration) * 100
+}
 
 function resetProgress() {
   cancelAnimationFrame(animationFrame)
@@ -92,11 +125,13 @@ function getBarStyle(i) {
 onMounted(() => {
   document.body.style.overflow = 'hidden'
   startProgress()
+  window.addEventListener('keydown', onKey)
 })
 
 onUnmounted(() => {
   document.body.style.overflow = ''
   cancelAnimationFrame(animationFrame)
+  window.removeEventListener('keydown', onKey)
 })
 
 </script>
@@ -104,10 +139,10 @@ onUnmounted(() => {
 <template>
   <div class="stories-root">
     <div class="top-bar">
-      <button @click="$emit('close')">
+      <button class="icon-btn" @click="$emit('close')">
         <ArrowLeft />
       </button>
-      <div>{{ label }}</div>
+      <div class="year-title">{{ label }}</div>
     </div>
 
     <!-- Progress Bars -->
@@ -124,18 +159,40 @@ onUnmounted(() => {
     </div>
     </div>
 
-    <div class="media-area" @click="next">
-      <img
+    <div class="media-area">
+        <img
         v-if="items[index].type === 'image'"
         :src="items[index].src"
-      />
+        />
 
-      <video
+        <video
         v-else
+        ref="videoEl"
         :src="items[index].src"
         autoplay
+        playsinline
+        @loadedmetadata="onVideoLoaded"
+        @timeupdate="onVideoTimeUpdate"
         @ended="next"
-      />
+        />
+
+        <button
+          class="nav-btn nav-prev"
+          @click="prev"
+          aria-label="Previous"
+        >
+          <ChevronLeft :size="36" />
+        </button>
+
+        <!-- Right -->
+        <button
+          class="nav-btn nav-next"
+          @click="next"
+          aria-label="Next"
+        >
+          <ChevronRight :size="36" />
+        </button>
+
     </div>
   </div>
 </template>
@@ -166,6 +223,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin: 20px 20px 20px 20px;
 }
 
 .media-area img,
@@ -201,4 +259,10 @@ onUnmounted(() => {
   background: #fff;
 }
 
+.year-title 
+{
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 20px;
+}
 </style>
