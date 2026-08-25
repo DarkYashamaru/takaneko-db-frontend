@@ -1,5 +1,6 @@
 <script setup>
 import TimelineItem from './TimelineItem.vue'
+import { formatTimelineDay } from '@/i18n'
 
 defineProps({
   group: Object
@@ -11,7 +12,7 @@ defineEmits(['open'])
 <template>
   <section class="timeline-day">
     <div class="day-label">
-      {{ group.label }}
+      {{ formatTimelineDay(group.date) }}
     </div>
 
     <div class="grid">

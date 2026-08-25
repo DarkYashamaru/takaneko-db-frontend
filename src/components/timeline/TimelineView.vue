@@ -5,6 +5,7 @@ import { MEDIA_BASE } from '@/config/urls'
 import TimelineDay from '@/components/timeline/TimelineDay.vue'
 import Lightbox from '@/components/Lightbox.vue'
 import { ArrowLeft } from 'lucide-vue-next'
+import { t } from '@/i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 
@@ -60,7 +61,6 @@ function getIndexFromId(id)
 watch(
   () => route.query.photo,
   (newPhoto) => {
-    console.log('Photo changed:', newPhoto)
     updateActiveIndex(newPhoto)
   }
 )
@@ -271,7 +271,6 @@ async function loadTimeline({ reset = false } = {}) {
 
   try {
 
-    console.log(`/timeline?${params.toString()}`)
     const res = await apiGet(`/timeline?${params.toString()}`)
 
     const normalized = res.items.map(group => ({
@@ -318,14 +317,14 @@ async function loadTimeline({ reset = false } = {}) {
       <button
         class="icon-btn back-btn"
         @click="$emit('back')"
-        aria-label="back"
+        :aria-label="t('common.back')"
       >
         <ArrowLeft :size="28" />
       </button>
     </div>
 
     <div v-if="loading" class="loading">
-      Loading timeline…
+      {{ t('timeline.loading') }}
     </div>
 
     <div v-else-if="error" class="error">
@@ -356,11 +355,11 @@ async function loadTimeline({ reset = false } = {}) {
     />
 
     <div v-if="loadingMore" class="loading-more">
-      Loading more…
+      {{ t('timeline.loadingMore') }}
     </div>
 
     <div v-if="!hasMore" class="end">
-      End of timeline
+      {{ t('timeline.end') }}
     </div>
 
   </main>

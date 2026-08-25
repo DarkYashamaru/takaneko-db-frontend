@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { apiGet } from '@/services/api'
 import { MEDIA_BASE } from '@/config/urls'
 import TimelineDay from '@/components/timeline/TimelineDay.vue'
+import { t } from '@/i18n'
 import Lightbox from '@/components/Lightbox.vue'
 
 const activeIndex = ref(null)
@@ -249,7 +250,7 @@ watch(
 <template>
   <main class="idol-timeline">
     <div v-if="loading" class="loading">
-      Loading timeline…
+      {{ t('timeline.loading') }}
     </div>
 
     <div v-else-if="error" class="error">
@@ -280,11 +281,11 @@ watch(
     />
 
     <div v-if="loadingMore" class="loading-more">
-      Loading more…
+      {{ t('timeline.loadingMore') }}
     </div>
 
     <div v-if="!hasMore" class="end">
-      End of timeline
+      {{ t('timeline.end') }}
     </div>
 
   </main>

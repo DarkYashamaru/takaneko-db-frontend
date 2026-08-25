@@ -1,31 +1,26 @@
 <script setup>
 import { MEDIA_BASE } from '@/config/urls'
+import { t } from '@/i18n'
 
-const heroUrl = `${MEDIA_BASE}/media/hero.jpg`
+const heroUrl = `${MEDIA_BASE}/media/mikurun.jpg`
 </script>
 
 <template>
   <section class="hero">
     <img
       :src="heroUrl"
-      alt="Takane no Nadeshiko"
+      :alt="t('hero.imageAlt')"
       class="hero-image"
     />
 
     <div class="hero-overlay">
       <h1 class="hero-title">高嶺のなでしこ</h1>
       <h2 class="hero-subtitle">
-        Archivo histórico no oficial de Takane No Nadeshiko
+        {{ t('hero.subtitle') }}
       </h2>
     </div>
   </section>
 </template>
-
-<!-- <script>
-export default {
-  name: 'HeroSection'
-}
-</script> -->
 
 <style scoped>
 .hero {
@@ -39,10 +34,35 @@ export default {
 
 /* Background image */
 .hero-image {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+
+  /*
+   * This particular image is 2000x1333 and gets heavily cropped
+   * vertically on wide desktop screens.
+   *
+   * Bias the crop toward the top so we keep the idols' faces visible
+   * and sacrifice more of the lower part of the image instead.
+   */
+  object-position: 50% 15%;
+}
+
+/*
+ * On narrower screens the image already composes well naturally,
+ * so move the focal point progressively back toward the center.
+ */
+@media (max-width: 1200px) {
+  .hero-image {
+    object-position: 50% 25%;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-image {
+    object-position: center;
+  }
 }
 
 /* Overlay for text */

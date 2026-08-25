@@ -5,8 +5,10 @@ import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { idols, getIdolFaceImageBySlug } from '@/data/idols'
 import { MEDIA_BASE } from '@/config/urls'
+import { useI18n } from '@/i18n'
 
 const router = useRouter()
+const { locale, t } = useI18n()
 
 // FORM STATE
 const since = ref(null)
@@ -63,7 +65,6 @@ function submitSearch() {
     query.platform = platform.value
   }
 
-  console.log("Query: ",query)
 
   router.push({
     path: '/search',
@@ -75,44 +76,44 @@ function submitSearch() {
 
 <template>
   <main class="container">
-    <h1>Advanced Search</h1>
+    <h1>{{ t('search.title') }}</h1>
 
     <section class="filter-group">
-      <label>Context</label>
+      <label>{{ t('search.context') }}</label>
       <input
         v-model="context"
         type="text"
-        placeholder="e.g. beach, live performance, white dress..."
+        :placeholder="t('search.contextPlaceholder')"
         class="context-input"
       />
     </section>
 
     <!-- Date Range -->
     <section class="filter-group">
-      <label>Date range</label>
+      <label>{{ t('search.dateRange') }}</label>
 
       <div class="date-row">
         <div class="date-field">
-          <span>Start date</span>
+          <span>{{ t('search.startDate') }}</span>
             <VueDatePicker
               v-model="since"
               dark
               :enable-time-picker="false"
               :auto-apply="true"
-              format="yyyy-MM-dd"
+              :locale="locale === 'es-419' ? 'es' : 'en'"
               model-type="yyyy-MM-dd"
               :max-date="until"
             />
         </div>
 
         <div class="date-field">
-          <span>End date</span>
+          <span>{{ t('search.endDate') }}</span>
             <VueDatePicker
               v-model="until"
               dark
               :enable-time-picker="false"
               :auto-apply="true"
-              format="yyyy-MM-dd"
+              :locale="locale === 'es-419' ? 'es' : 'en'"
               model-type="yyyy-MM-dd"
               :min-date="since"
             />
@@ -122,7 +123,7 @@ function submitSearch() {
 
     <!-- Idol Post filter -->
     <section class="filter-group">
-      <label>Posted by</label>
+      <label>{{ t('search.postedBy') }}</label>
 
       <div class="radio-group">
         <label>
@@ -131,7 +132,7 @@ function submitSearch() {
             value=""
             v-model="postedBy"
           />
-          Anyone
+          {{ t('search.anyone') }}
         </label>
 
         <label
@@ -149,7 +150,7 @@ function submitSearch() {
     </section>
     <!-- Face Filter -->
     <section class="filter-group">
-      <label>Faces</label>
+      <label>{{ t('search.faces') }}</label>
 
       <div class="face-grid">
         <label
@@ -167,7 +168,7 @@ function submitSearch() {
 
           <img
             :src="`${MEDIA_BASE}${getIdolFaceImageBySlug(idol.slug)}`"
-            :alt="idol.name"
+            :alt="t('idols.portraitAlt', { name: idol.name })"
           />
 
           <span>{{ idol.name }}</span>
@@ -177,9 +178,9 @@ function submitSearch() {
 
     <!-- Platform Filter -->
     <section class="filter-group">
-      <label>Platform</label>
+      <label>{{ t('search.platform') }}</label>
       <select v-model="platform">
-        <option value="">All</option>
+        <option value="">{{ t('search.allPlatforms') }}</option>
         <option
           v-for="p in platforms"
           :key="p.value"
@@ -192,7 +193,7 @@ function submitSearch() {
 
     <!-- Submit -->
     <button class="search-btn" @click="submitSearch">
-      Search
+      {{ t('search.submit') }}
     </button>
   </main>
 </template>

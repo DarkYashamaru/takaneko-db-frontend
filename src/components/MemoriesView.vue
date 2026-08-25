@@ -1,6 +1,6 @@
 <template>
   <main class="memories-root">
-    <h1 class="title">On this day</h1>
+    <h1 class="title">{{ t('memories.title') }}</h1>
 
     <div class="years-grid">
       <div
@@ -11,7 +11,7 @@
       >
         <img :src="group.items[0].thumbnailFull" />
         <div class="overlay">
-          <span>{{ group.label }}</span>
+          <span>{{ memoryLabel(group) }}</span>
         </div>
       </div>
     </div>
@@ -19,7 +19,7 @@
     <StoriesViewer
       v-if="activeGroup"
       :items="activeGroup.items"
-      :label="activeGroup.label"
+      :label="memoryLabel(activeGroup)"
       @close="activeGroup = null"
     />
   </main>
@@ -30,13 +30,15 @@ import { ref, onMounted } from 'vue'
 import { apiGet } from '@/services/api'
 import { MEDIA_BASE } from '@/config/urls'
 import StoriesViewer from '@/components/StoriesViewer.vue'
+import { t } from '@/i18n'
 
 const groups = ref([])
 const activeGroup = ref(null)
+const targetDate = ref(null)
 
 async function load() {
   const res = await apiGet('/memories')
-  console.log(res)
+  targetDate.value = res.target_date
   groups.value = res.items.map(g => ({
     ...g,
     items: g.items.map(i => ({
@@ -45,6 +47,10 @@ async function load() {
       src: `${MEDIA_BASE}${i.src}`
     }))
   }))
+}
+
+function memoryLabel(group) {
+  return t('memories.yearsAgo', { count: Number(targetDate.value?.slice(0, 4)) - group.year })
 }
 
 function openYear(group) {

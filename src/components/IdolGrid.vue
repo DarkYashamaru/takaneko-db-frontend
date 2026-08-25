@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import IdolCard from './IdolCard.vue'
 import { idols } from '@/data/idols'
+import { t } from '@/i18n'
 </script>
 
 <template>
   <section class="idol-grid">
-    <h2 class="section-title">Idols</h2>
+    <h2 class="section-title">{{ t('idols.title') }}</h2>
 
     <div class="grid">
       <IdolCard

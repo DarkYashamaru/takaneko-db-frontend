@@ -2,6 +2,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import '@/composables/lightbox.css'
+import { t } from '@/i18n'
 
 const props = defineProps({
   items: Array,
@@ -139,7 +140,7 @@ onUnmounted(() => {
 <template>
   <div class="stories-root">
     <div class="top-bar">
-      <button class="icon-btn" @click="$emit('close')">
+      <button class="icon-btn" @click="$emit('close')" :aria-label="t('common.close')">
         <ArrowLeft />
       </button>
       <div class="year-title">{{ label }}</div>
@@ -179,7 +180,7 @@ onUnmounted(() => {
         <button
           class="nav-btn nav-prev"
           @click="prev"
-          aria-label="Previous"
+          :aria-label="t('common.previous')"
         >
           <ChevronLeft :size="36" />
         </button>
@@ -188,7 +189,7 @@ onUnmounted(() => {
         <button
           class="nav-btn nav-next"
           @click="next"
-          aria-label="Next"
+          :aria-label="t('common.next')"
         >
           <ChevronRight :size="36" />
         </button>

@@ -1,13 +1,17 @@
 <template>
   <main class="not-found">
     <h1>404</h1>
-    <p>Page not found</p>
+    <p>{{ t('errors.notFound') }}</p>
 
     <RouterLink to="/" class="home-link">
-      ← Go back home
+      {{ t('errors.goHome') }}
     </RouterLink>
   </main>
 </template>
+
+<script setup>
+import { t } from '@/i18n'
+</script>
 
 <style scoped>
 .not-found {

@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import type { Idol } from '@/data/idols'
 import { MEDIA_BASE } from '@/config/urls'
+import { t } from '@/i18n'
 
 const props = defineProps<{
   idol: Idol
@@ -22,7 +23,7 @@ function openIdol() {
       <img
         v-if="idol.image"
         :src= "idolImage"
-        :alt="idol.name"
+        :alt="t('idols.portraitAlt', { name: idol.name })"
         loading="lazy"
       />
       <div v-else class="placeholder" />
