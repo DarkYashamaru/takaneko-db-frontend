@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import UnderDevelopment from '@/components/UnderDevelopment.vue';
+import WeLoveYouMikurun from '@/components/WeLoveYouMikurun.vue';
 import AdvancedSearch from '../components/AdvancedSearch.vue';
 import FeaturedTimeline from '../components/FeaturedTimeline.vue';
 import HeroSection from '../components/HeroSection.vue';
@@ -13,7 +13,7 @@ import SiteHeader from '@/components/SiteHeader.vue';
     <SiteHeader/>
     <HeroSection/>
     <MemoriesView/>
-    <UnderDevelopment/>
+    <WeLoveYouMikurun/>
     <FeaturedTimeline/>
     <IdolGrid/>
     <AdvancedSearch/>

@@ -13,6 +13,7 @@ const messages = {
     memories: { title: 'On this day', yearsAgo: ({ count }) => count === 1 ? '1 year ago' : `${count} years ago` },
     lightbox: { platform: 'Platform:', postedAt: 'Posted at:', viewOriginal: 'View original post', recognizedIdols: 'Idols' },
     development: { title: '🚧 Under development' },
+    mikurun: { title: 'WE LOVE YOU MIKURUN! 🌹❤️', imageAlt: 'Mikurun tribute image {index}', concertTitle: "Mikuru's Final Concert", concertUnavailable: 'The concert is temporarily unavailable.' },
     errors: { notFound: 'Page not found', goHome: '← Go back home', requestFailed: 'Unable to load media.' }
   },
   'es-419': {
@@ -24,6 +25,7 @@ const messages = {
     memories: { title: 'Memorias', yearsAgo: ({ count }) => count === 1 ? 'Hace 1 año' : `Hace ${count} años` },
     lightbox: { platform: 'Plataforma:', postedAt: 'Publicado:', viewOriginal: 'Ver publicación original', recognizedIdols: 'Ídolos' },
     development: { title: '🚧 En desarrollo' },
+    mikurun: { title: 'TE AMAMOS MIKURUN! 🌹❤️', imageAlt: 'Imagen de homenaje a Mikurun {index}', concertTitle: 'Último concierto de Mikuru', concertUnavailable: 'El concierto no está disponible temporalmente.' },
     errors: { notFound: 'Página no encontrada', goHome: '← Volver al inicio', requestFailed: 'No se pudo cargar el contenido.' }
   }
 }
