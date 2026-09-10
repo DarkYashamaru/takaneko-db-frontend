@@ -6,6 +6,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { idols, getIdolFaceImageBySlug } from '@/data/idols'
 import { MEDIA_BASE } from '@/config/urls'
 import { useI18n } from '@/i18n'
+import { track } from '@/services/analytics'
 
 const router = useRouter()
 const { locale, t } = useI18n()
@@ -65,6 +66,8 @@ function submitSearch() {
     query.platform = platform.value
   }
 
+
+  track("search_submitted", { context: context.value?.trim() || "", idol: postedBy.value || "", faces: selectedFaces.value, platform: platform.value || "", since: since.value || "", until: until.value || "" })
 
   router.push({
     path: '/search',

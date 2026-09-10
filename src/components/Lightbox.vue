@@ -1,8 +1,10 @@
 <script setup>
+function trackSource() { track("source_link_open", { platform: props.item?.platform || "" }) }
 import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { getIdolFaceImageBySlug, getIdolNameBySlug } from '@/data/idols'
 import { MEDIA_BASE } from '@/config/urls'
+import { track } from '@/services/analytics'
 import { useRouter } from 'vue-router'
 import '@/composables/lightbox.css'
 import { t, formatDateTime } from '@/i18n'
@@ -412,6 +414,7 @@ watch(
         </div>
 
         <a
+          @click="trackSource"
           :href="item.post_url"
           target="_blank"
           rel="noopener"

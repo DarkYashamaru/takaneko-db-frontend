@@ -6,6 +6,7 @@ import TimelineDay from '@/components/timeline/TimelineDay.vue'
 import Lightbox from '@/components/Lightbox.vue'
 import { ArrowLeft } from 'lucide-vue-next'
 import { t } from '@/i18n'
+import { routeCategory, track } from '@/services/analytics'
 import { useRoute, useRouter } from 'vue-router'
 
 
@@ -66,6 +67,7 @@ watch(
 )
 
 function openImage(item) {
+  track("lightbox_open", { platform: item.platform || "", media_type: item.media_type || "" })
   //console.log("Open Image", item.id)
   router.replace({
     query: {
@@ -298,6 +300,9 @@ async function loadTimeline({ reset = false } = {}) {
     // cursor handling (safe for later)
     cursor.value = res.next_cursor ?? null
     hasMore.value = Boolean(res.next_cursor)
+    const page = routeCategory(route.path)
+    if (!params.has("cursor")) track("search_results_loaded", { result_count: normalized.reduce((count, group) => count + group.items.length, 0), has_more: hasMore.value }, route.path)
+    if (days.value.length && [2, 5, 10].includes(days.value.length)) track("timeline_depth", { loaded_pages: days.value.length }, route.path)
 
   } catch (err) {
     error.value = err.message
