@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { VueDatePicker } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import { enUS, es } from 'date-fns/locale'
 import { idols, getIdolFaceImageBySlug } from '@/data/idols'
 import { MEDIA_BASE } from '@/config/urls'
 import { useI18n } from '@/i18n'
@@ -10,6 +11,7 @@ import { track } from '@/services/analytics'
 
 const router = useRouter()
 const { locale, t } = useI18n()
+const datePickerLocale = computed(() => locale.value === 'es-419' ? es : enUS)
 
 // FORM STATE
 const since = ref(null)
@@ -101,11 +103,12 @@ function submitSearch() {
             <VueDatePicker
               v-model="since"
               dark
-              :enable-time-picker="false"
+              :time-config="{ enableTimePicker: false }"
               :auto-apply="true"
-              :locale="locale === 'es-419' ? 'es' : 'en'"
+              :locale="datePickerLocale"
               model-type="yyyy-MM-dd"
               :max-date="until"
+              teleport="body"
             />
         </div>
 
@@ -114,11 +117,12 @@ function submitSearch() {
             <VueDatePicker
               v-model="until"
               dark
-              :enable-time-picker="false"
+              :time-config="{ enableTimePicker: false }"
               :auto-apply="true"
-              :locale="locale === 'es-419' ? 'es' : 'en'"
+              :locale="datePickerLocale"
               model-type="yyyy-MM-dd"
               :min-date="since"
+              teleport="body"
             />
         </div>
       </div>
@@ -260,9 +264,22 @@ select {
 
 .date-field {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+}
+
+@media (max-width: 599px) {
+  .container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .date-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 }
 
 .face-grid {
