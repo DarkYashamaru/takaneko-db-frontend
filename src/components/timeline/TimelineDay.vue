@@ -37,8 +37,8 @@ defineEmits(['open'])
   top: 0;
   z-index: 10;
 
-  background: #000;
-  color: #aaa;
+  background: var(--iw-media);
+  color: var(--iw-text-muted);
   font-size: 0.9rem;
   padding: 0.5rem 0;
 }

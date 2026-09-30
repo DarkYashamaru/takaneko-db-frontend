@@ -64,8 +64,8 @@ onMounted(load)
 <style>
 .memories-root {
   padding: 2rem 1rem;
-  background: #000;
-  color: #fff;
+  background: var(--iw-media);
+  color: var(--iw-text-strong);
 }
 
 .title {
@@ -101,7 +101,7 @@ onMounted(load)
   position: relative;
   cursor: pointer;
 
-  background: #111;
+  background: var(--iw-bg-elevated);
   transition: transform 0.2s ease;
   scroll-snap-align: start;
 }

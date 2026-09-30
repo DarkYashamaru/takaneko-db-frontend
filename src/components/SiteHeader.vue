@@ -14,9 +14,9 @@ const { locale, setLocale, t } = useI18n()
 </template>
 
 <style scoped>
-.site-header { position: static; height: 52px; display: flex; align-items: center; padding: 0 1rem; background: rgba(0, 0, 0, .94); border-bottom: 1px solid rgba(255,255,255,.1); }
-.brand { color: #fff; font-weight: 700; text-decoration: none; }
-.language-switcher { display: flex; border: 1px solid #555; border-radius: 6px; overflow: hidden; }
-.language-switcher button { border: 0; background: transparent; color: #ccc; padding: .35rem .55rem; cursor: pointer; font: inherit; font-size: .8rem; }
-.language-switcher button.active { background: #fff; color: #111; }
+.site-header { position: static; height: 52px; display: flex; align-items: center; padding: 0 1rem; background: rgb(0 0 0 / .94); border-bottom: 1px solid rgb(255 255 255 / .1); }
+.brand { color: var(--iw-text-strong); font-weight: 700; text-decoration: none; }
+.language-switcher { display: flex; border: 1px solid var(--iw-control-border); border-radius: 6px; overflow: hidden; }
+.language-switcher button { border: 0; background: transparent; color: var(--iw-text-muted); padding: .35rem .55rem; cursor: pointer; font: inherit; font-size: .8rem; }
+.language-switcher button.active { background: var(--iw-text-strong); color: var(--iw-bg-elevated); }
 </style>

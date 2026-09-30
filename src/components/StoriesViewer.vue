@@ -202,7 +202,7 @@ onUnmounted(() => {
 .stories-root {
   position: fixed;
   inset: 0;
-  background: #000;
+  background: var(--iw-media);
   z-index: 2000;
 
   display: flex;
@@ -214,7 +214,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   padding: 0 1rem;
-  color: #fff;
+  color: var(--iw-text-strong);
   z-index: 5;
 }
 
@@ -252,12 +252,12 @@ onUnmounted(() => {
 .bar-fill {
   height: 100%;
   width: 0%;
-  background: #fff;
+  background: var(--iw-text-strong);
   transition: width 0.05s linear;
 }
 
 .bar.active {
-  background: #fff;
+  background: var(--iw-text-strong);
 }
 
 .year-title 

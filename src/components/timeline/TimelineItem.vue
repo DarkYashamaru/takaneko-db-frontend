@@ -38,7 +38,7 @@ const photoUrl = computed(() => {
 .timeline-item {
   width: 200px;
   height: 200px;
-  background: #111;
+  background: var(--iw-bg-elevated);
   overflow: hidden;
   border-radius: 6px;
 
@@ -66,7 +66,7 @@ const photoUrl = computed(() => {
   z-index: 2;
   transform: scale(1.04);
   box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.6),
+    0 6px 18px rgb(0 0 0 / 60%),
     0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 

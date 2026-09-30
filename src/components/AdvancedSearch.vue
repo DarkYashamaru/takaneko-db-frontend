@@ -210,10 +210,10 @@ function submitSearch() {
   max-width: 600px;
   margin: 2rem auto;
   padding: 1.5rem;
-  background: #111;
+  background: var(--iw-bg-elevated);
   border-radius: 12px;
-  color: #fff;
-  font-family: system-ui, sans-serif;
+  color: var(--iw-text-strong);
+  font-family: var(--iw-font-body);
 }
 
 h1 {
@@ -237,9 +237,9 @@ input[type="date"],
 select {
   padding: 0.5rem;
   border-radius: 6px;
-  border: 1px solid #333;
-  background: #1a1a1a;
-  color: #fff;
+  border: 1px solid var(--iw-border);
+  background: var(--iw-surface-soft);
+  color: var(--iw-text);
 }
 
 .search-btn {
@@ -247,14 +247,14 @@ select {
   padding: 0.75rem;
   border: none;
   border-radius: 8px;
-  background: #4f46e5;
-  color: white;
+  background: var(--iw-accent);
+  color: var(--iw-on-accent);
   font-weight: 600;
   cursor: pointer;
 }
 
 .search-btn:hover {
-  background: #6366f1;
+  background: var(--iw-accent-hover);
 }
 
 .date-row {
@@ -303,7 +303,7 @@ select {
   padding: 0.75rem 0.5rem;
   border-radius: 16px;
 
-  background: #1a1a1a;
+  background: var(--iw-surface-soft);
   border: 1px solid transparent;
   transition: all 0.2s ease;
 }
@@ -329,12 +329,12 @@ select {
 }
 
 .face-card:hover {
-  background: #222;
+  background: var(--iw-surface-hover);
 }
 
 .face-card.active {
-  border: 1px solid #6366f1;
-  background: #1f1f2f;
+  border: 1px solid var(--iw-accent);
+  background: var(--iw-surface-selected);
 }
 
 .face-card.active img {
@@ -344,9 +344,9 @@ select {
 .context-input {
   padding: 0.75rem;
   border-radius: 8px;
-  border: 1px solid #333;
-  background: #1a1a1a;
-  color: #fff;
+  border: 1px solid var(--iw-border);
+  background: var(--iw-surface-soft);
+  color: var(--iw-text);
   font-size: 0.9rem;
 }
 

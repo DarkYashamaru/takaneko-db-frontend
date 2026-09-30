@@ -24,7 +24,10 @@ const apiQuery = computed(() => {
   return query
 })
 
-const presentation = computed(() => apiQuery.value.context?.trim() ? 'relevance' : 'timeline')
+const presentation = computed(() => {
+  if (apiQuery.value.context?.trim()) return 'relevance'
+  return apiQuery.value.similarity ? 'similarity' : 'timeline'
+})
 
 function onOpen(item) {
   router.replace({

@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import { routeCategory, track } from './services/analytics'
 import { locale } from './i18n'
+import './assets/theme.css'
 import '@vuepic/vue-datepicker/dist/main.css'
 
 document.documentElement.lang = locale.value

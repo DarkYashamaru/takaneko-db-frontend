@@ -29,7 +29,7 @@ const heroUrl = `${MEDIA_BASE}/media/mikurun.jpg`
   height: 70vh;
   min-height: 480px;
   overflow: hidden;
-  background-color: #0f1114;
+  background-color: var(--iw-bg-elevated);
 }
 
 /* Background image */
@@ -89,7 +89,7 @@ const heroUrl = `${MEDIA_BASE}/media/mikurun.jpg`
   font-size: clamp(2.2rem, 5vw, 3.5rem);
   font-weight: 600;
   letter-spacing: 0.1em;
-  color: #e6e6e6;
+  color: var(--iw-text);
   text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.6),
     0 0 12px rgba(255, 255, 255, 0.08);
@@ -99,7 +99,7 @@ const heroUrl = `${MEDIA_BASE}/media/mikurun.jpg`
 /* Subtitle */
 .hero-subtitle {
   font-size: 1rem;
-  color: #c9c9c9;
+  color: var(--iw-text-muted);
   max-width: 420px;
   line-height: 1.6;
 }

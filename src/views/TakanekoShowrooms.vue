@@ -43,18 +43,18 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.showrooms { min-height: calc(100vh - 52px); padding: clamp(1.5rem, 4vw, 3.5rem) 1rem 4rem; background: #090909; color: #f8f8f8; }
+.showrooms { min-height: calc(100vh - 52px); padding: clamp(1.5rem, 4vw, 3.5rem) 1rem 4rem; background: var(--iw-bg); color: var(--iw-text); }
 .intro, .member-grid, .state { width: min(100%, 1080px); margin-inline: auto; }
 .intro { text-align: center; max-width: 760px; }
-.eyebrow { margin: 0; color: #ee8ca9; font-weight: 700; letter-spacing: .12em; }
+.eyebrow { margin: 0; color: var(--iw-accent); font-weight: 700; letter-spacing: .12em; }
 h1 { margin: .35rem 0 .75rem; font-size: clamp(2rem, 5vw, 3.4rem); }
-.intro p:last-child, .state { color: #d1d1d1; line-height: 1.6; }
+.intro p:last-child, .state { color: var(--iw-text-muted); line-height: 1.6; }
 .state { margin-top: 3rem; text-align: center; }
 .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; margin-top: 2.5rem; }
-.member-card { overflow: hidden; border: 1px solid #444; border-radius: .5rem; background: #171717; color: inherit; text-decoration: none; }
-.member-card:hover, .member-card:focus-visible { border-color: #ee8ca9; outline: 2px solid #ee8ca9; outline-offset: 2px; }
-.member-card img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: #000; }
+.member-card { overflow: hidden; border: 1px solid var(--iw-border); border-radius: .5rem; background: var(--iw-surface); color: inherit; text-decoration: none; }
+.member-card:hover, .member-card:focus-visible { border-color: var(--iw-accent); outline: 2px solid var(--iw-accent); outline-offset: 2px; }
+.member-card img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--iw-media); }
 .member-card span { display: grid; gap: .35rem; padding: .75rem; }
-.member-card small { color: #c8c8c8; }
-.error { color: #ffb5b5; }
+.member-card small { color: var(--iw-text-muted); }
+.error { color: var(--iw-danger); }
 </style>

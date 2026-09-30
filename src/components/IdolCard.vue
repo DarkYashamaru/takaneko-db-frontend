@@ -41,7 +41,7 @@ function openIdol() {
 <style scoped>
 .idol-card {
   cursor: pointer;
-  background: #111;
+  background: var(--iw-bg-elevated);
   border-radius: 14px;
   overflow: hidden;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -49,12 +49,12 @@ function openIdol() {
 
 .idol-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  box-shadow: var(--iw-shadow-md);
 }
 
 .image-wrapper {
   aspect-ratio: 3 / 4;
-  background: #222;
+  background: var(--iw-surface-hover);
 }
 
 .image-wrapper img {
@@ -66,7 +66,7 @@ function openIdol() {
 .placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #222, #333);
+  background: linear-gradient(135deg, var(--iw-surface-hover), var(--iw-border));
 }
 
 .info {
@@ -74,12 +74,12 @@ function openIdol() {
 }
 
 .name {
-  color: #fff;
+  color: var(--iw-text-strong);
   font-weight: 600;
 }
 
 .native {
-  color: #aaa;
+  color: var(--iw-text-muted);
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }

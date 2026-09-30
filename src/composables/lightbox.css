@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   padding: 0.75rem 1rem;
-  color: #fff;
+  color: var(--iw-text-strong);
   z-index: 2;
 }
 
@@ -24,7 +24,7 @@
 .icon-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--iw-text-strong);
   font-size: 1.25rem;
   cursor: pointer;
   opacity: 0.85;
@@ -98,7 +98,7 @@
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(6px);
 
-  color: white;
+  color: var(--iw-text-strong);
   cursor: pointer;
 
   opacity: 0.65;
@@ -137,15 +137,15 @@
 /* Info panel */
 .info-panel {
   width: 340px;
-  background: #111;
-  color: #eee;
+  background: var(--iw-bg-elevated);
+  color: var(--iw-text);
   padding: 1rem;
-  border-left: 1px solid #222;
+  border-left: 1px solid var(--iw-surface-hover);
   overflow-y: auto;
 }
 
 .username {
-  color: #aaa;
+  color: var(--iw-text-muted);
   margin-bottom: 1rem;
 }
 
@@ -156,7 +156,7 @@
 .external-link {
   display: inline-block;
   margin-top: 1rem;
-  color: #6ea8ff;
+  color: var(--iw-link);
   text-decoration: none;
 }
 
@@ -192,7 +192,7 @@
   align-items: center;
   justify-content: center;
 
-  color: #fff;
+  color: var(--iw-text-strong);
   cursor: pointer;
 
   transition: background 0.15s ease, transform 0.1s ease;
@@ -207,7 +207,7 @@
 }
 
 .face-box {
-  border: 2px solid #4da3ff;
+  border: 2px solid var(--iw-face);
   border-radius: 4px;
   box-shadow: 0 0 0 9999px rgba(0,0,0,0.0);
   pointer-events: none;
@@ -226,7 +226,7 @@
 
 .idol-label {
   font-size: 0.75rem;
-  color: #aaa;
+  color: var(--iw-text-muted);
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;

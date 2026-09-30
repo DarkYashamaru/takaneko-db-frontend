@@ -3,11 +3,12 @@ function trackSource() { track("source_link_open", { platform: props.item?.platf
 import { ArrowLeft, Info, ChevronRight, ChevronLeft } from 'lucide-vue-next'
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { getIdolFaceImageBySlug, getIdolNameBySlug } from '@/data/idols'
-import { MEDIA_BASE } from '@/config/urls'
+import { API_BASE, MEDIA_BASE } from '@/config/urls'
 import { track } from '@/services/analytics'
 import { useRouter } from 'vue-router'
 import '@/composables/lightbox.css'
 import { t, formatDateTime } from '@/i18n'
+import { clearAdminSession, isAdmin, refreshAdminSession } from '@/services/adminAuth'
 
 const router = useRouter()
 
@@ -15,6 +16,81 @@ const props = defineProps({
   src: String,
   item: Object
 })
+
+const adminProfiles = ref([])
+const selectedProfile = ref('')
+const manualRating = ref(null)
+const manualLabelLoading = ref(false)
+const manualLabelSaving = ref(false)
+const manualLabelStatus = ref('')
+const manualLabelVisible = computed(() => isAdmin.value && props.item?.type === 'image' && Number.isInteger(props.item?.media_id))
+let manualRatingRequest = 0
+
+function manualLabelEndpoint(path = '') {
+  return `${API_BASE}/preference/profiles/${encodeURIComponent(selectedProfile.value)}/labels/${props.item.media_id}${path}`
+}
+
+async function adminResponse(response) {
+  const payload = await response.json().catch(() => ({}))
+  if (response.status === 401) clearAdminSession()
+  if (!response.ok) throw new Error(payload.detail || `Request failed (${response.status})`)
+  return payload
+}
+
+async function loadManualRating() {
+  const request = ++manualRatingRequest
+  manualRating.value = null
+  if (!manualLabelVisible.value || !selectedProfile.value) return
+  manualLabelLoading.value = true
+  manualLabelStatus.value = ''
+  try {
+    const payload = await adminResponse(await fetch(manualLabelEndpoint(), { credentials: 'same-origin' }))
+    if (request !== manualRatingRequest) return
+    manualRating.value = payload.rating
+  } catch (error) {
+    if (request !== manualRatingRequest) return
+    manualLabelStatus.value = error.message
+  } finally {
+    if (request === manualRatingRequest) manualLabelLoading.value = false
+  }
+}
+
+async function loadManualProfiles() {
+  if (!await refreshAdminSession()) return
+  manualLabelLoading.value = true
+  try {
+    const payload = await adminResponse(await fetch(`${API_BASE}/preference/profiles`, { credentials: 'same-origin' }))
+    adminProfiles.value = payload.items
+    if (!adminProfiles.value.some((profile) => profile.slug === selectedProfile.value)) {
+      selectedProfile.value = adminProfiles.value[0]?.slug || ''
+    }
+    await loadManualRating()
+  } catch (error) {
+    manualLabelStatus.value = error.message
+  } finally {
+    manualLabelLoading.value = false
+  }
+}
+
+async function saveManualRating(rating) {
+  if (!manualLabelVisible.value || manualLabelSaving.value) return
+  manualLabelSaving.value = true
+  manualLabelStatus.value = ''
+  try {
+    await adminResponse(await fetch(manualLabelEndpoint(), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating }),
+    }))
+    manualRating.value = rating
+    manualLabelStatus.value = `Saved ${rating}/10. Train this profile when you are ready.`
+  } catch (error) {
+    manualLabelStatus.value = error.message
+  } finally {
+    manualLabelSaving.value = false
+  }
+}
 
 const startX = ref(0)
 const startY = ref(0)
@@ -122,6 +198,7 @@ watch(scale, () => {
 onMounted(() => {
   updateContainerRect()
   window.addEventListener('resize', updateContainerRect)
+  loadManualProfiles()
 })
 
 onUnmounted(() => {
@@ -285,6 +362,11 @@ function openIdolByFace(slug) {
   router.push("/idol/by-face/"+slug)
 }
 
+function findSimilarImages() {
+  if (props.item?.type !== 'image' || !Number.isInteger(props.item?.media_id)) return
+  router.push({ path: '/search', query: { similarity: String(props.item.media_id) } })
+}
+
 onMounted(() => {
   document.body.style.overflow = 'hidden'
   window.addEventListener('keydown', onKey)
@@ -303,6 +385,11 @@ watch(
       videoEl.value.currentTime = 0
     }
   }
+)
+
+watch(
+  () => [props.item?.media_id, selectedProfile.value],
+  () => { loadManualRating() }
 )
 
 watch(
@@ -423,9 +510,32 @@ watch(
           {{ t('lightbox.viewOriginal') }}
         </a>
 
+        <button v-if="item.type === 'image' && Number.isInteger(item.media_id)" type="button" class="similar-images" @click="findSimilarImages">
+          {{ t('lightbox.findSimilar') }}
+        </button>
+
         <div>
           <p>{{ item.description }}</p>
         </div>
+
+        <section v-if="manualLabelVisible" class="preference-training" aria-label="Preference training">
+          <h2>Preference training</h2>
+          <label>
+            Profile
+            <select v-model="selectedProfile" :disabled="manualLabelLoading || manualLabelSaving || !adminProfiles.length">
+              <option v-for="profile in adminProfiles" :key="profile.id" :value="profile.slug">{{ profile.display_name }}</option>
+            </select>
+          </label>
+          <p v-if="manualLabelLoading">Loading score…</p>
+          <div v-else class="preference-ratings" aria-label="Rate this image from zero to ten">
+            <button v-for="score in 11" :key="score - 1" type="button"
+              :class="{ selected: manualRating === score - 1 }"
+              :disabled="manualLabelSaving || !selectedProfile"
+              @click="saveManualRating(score - 1)">{{ score - 1 }}</button>
+          </div>
+          <p v-if="manualLabelStatus" class="preference-status" role="status">{{ manualLabelStatus }}</p>
+        </section>
+
           <h2>{{ t('lightbox.recognizedIdols') }}</h2>
           <div class="Idols-apperances">
             <div
@@ -454,3 +564,10 @@ watch(
 
   </div>
 </template>
+
+<style scoped>
+.preference-training { margin:1.25rem 0; padding:1rem 0; border-top:1px solid var(--iw-border); border-bottom:1px solid var(--iw-border); }
+.similar-images { width:100%; margin:.75rem 0 0; min-height:2.5rem; border:1px solid var(--iw-accent-soft); border-radius:var(--iw-radius-sm); background:var(--iw-surface-selected); color:var(--iw-text); cursor:pointer; font:inherit; font-weight:700; }.similar-images:hover { border-color:var(--iw-accent); color:var(--iw-accent); }
+.preference-training h2 { margin:0 0 .75rem; }.preference-training label { display:grid; gap:.35rem; color:var(--iw-text-muted); font-size:.9rem; }.preference-training select { min-height:2.35rem; border:1px solid var(--iw-control-border); border-radius:var(--iw-radius-sm); padding:.35rem .5rem; background:var(--iw-surface-selected); color:var(--iw-text); font:inherit; }
+.preference-ratings { display:flex; flex-wrap:wrap; gap:.35rem; margin-top:.85rem; }.preference-ratings button { min-width:2.25rem; min-height:2.25rem; border:1px solid var(--iw-accent-soft); border-radius:var(--iw-radius-sm); background:var(--iw-surface-selected); color:var(--iw-text); cursor:pointer; font:inherit; }.preference-ratings button.selected { border-color:var(--iw-accent); background:var(--iw-accent); color:var(--iw-on-accent); font-weight:700; }.preference-ratings button:disabled { opacity:.55; cursor:not-allowed; }.preference-status { margin:.75rem 0 0; color:var(--iw-text-muted); font-size:.9rem; line-height:1.4; }
+</style>

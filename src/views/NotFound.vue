@@ -16,8 +16,8 @@ import { t } from '@/i18n'
 <style scoped>
 .not-found {
   min-height: 100vh;
-  background: #000;
-  color: #e6e6e6;
+  background: var(--iw-media);
+  color: var(--iw-text);
 
   display: flex;
   flex-direction: column;
@@ -33,12 +33,12 @@ h1 {
 }
 
 p {
-  color: #aaa;
+  color: var(--iw-text-muted);
   margin-bottom: 1.5rem;
 }
 
 .home-link {
-  color: #8ab4f8;
+  color: var(--iw-link);
   text-decoration: none;
 }
 </style>

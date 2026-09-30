@@ -41,7 +41,12 @@ const messages = {
       relevanceLoading: 'Finding relevant media…',
       relevanceLoadingMore: 'Finding more relevant media…',
       relevanceEmpty: 'No matching media found.',
-      relevanceEnd: 'You’ve reached the end of these results.'
+      relevanceEnd: 'You’ve reached the end of these results.',
+      similarityTitle: 'Similar images',
+      similarityLoading: 'Finding similar images…',
+      similarityLoadingMore: 'Finding more similar images…',
+      similarityEmpty: 'No similar images found.',
+      similarityEnd: 'You’ve reached the end of these results.'
     },
 
     timeline: {
@@ -61,6 +66,7 @@ const messages = {
       platform: 'Platform:',
       postedAt: 'Posted:',
       viewOriginal: 'View original post',
+      findSimilar: 'Find similar images',
       recognizedIdols: 'Members'
     },
 
@@ -150,7 +156,12 @@ const messages = {
       relevanceLoading: 'Buscando contenido relevante…',
       relevanceLoadingMore: 'Buscando más contenido relevante…',
       relevanceEmpty: 'No se encontró contenido coincidente.',
-      relevanceEnd: 'Has llegado al final de estos resultados.'
+      relevanceEnd: 'Has llegado al final de estos resultados.',
+      similarityTitle: 'Imágenes similares',
+      similarityLoading: 'Buscando imágenes similares…',
+      similarityLoadingMore: 'Buscando más imágenes similares…',
+      similarityEmpty: 'No se encontraron imágenes similares.',
+      similarityEnd: 'Has llegado al final de estos resultados.'
     },
 
     timeline: {
@@ -170,6 +181,7 @@ const messages = {
       platform: 'Plataforma:',
       postedAt: 'Publicado:',
       viewOriginal: 'Ver publicación original',
+      findSimilar: 'Buscar imágenes similares',
       recognizedIdols: 'Miembros'
     },
 

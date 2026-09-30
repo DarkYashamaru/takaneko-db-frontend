@@ -185,26 +185,26 @@ onBeforeUnmount(() => {
 <style scoped>
 .player-section, .episodes { width: min(100%, 1080px); margin-inline: auto; }
 .player-section { margin-top: 2rem; }
-.video-wrap { background: #000; }
-video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.video-wrap { background: var(--iw-media); }
+video { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--iw-media); }
 .caption-picker { display: flex; gap: .5rem; align-items: center; margin: .8rem 0 0; padding: 0; border: 0; }
-.caption-picker legend { padding: 0 .4rem 0 0; color: #d1d1d1; }
-.caption-picker button { border: 1px solid #777; border-radius: .3rem; padding: .4rem .7rem; background: #1b1b1b; color: #fff; cursor: pointer; }
-.caption-picker button.active { border-color: #ee8ca9; background: #5d2032; }
+.caption-picker legend { padding: 0 .4rem 0 0; color: var(--iw-text-muted); }
+.caption-picker button { border: 1px solid var(--iw-control-border); border-radius: .3rem; padding: .4rem .7rem; background: var(--iw-surface-soft); color: var(--iw-text-strong); cursor: pointer; }
+.caption-picker button.active { border-color: var(--iw-accent); background: var(--iw-accent-soft); }
 .episode-copy { padding: 1rem 0 .5rem; }
 .episode-copy h2 { margin: .25rem 0 .55rem; font-size: clamp(1.35rem, 3vw, 2rem); }
-.episode-copy p { margin: 0 0 .8rem; color: #d1d1d1; line-height: 1.55; }
-.date { color: #ee8ca9 !important; font-size: .9rem; font-weight: 600; }
-.official-link { display: inline-block; padding: .7rem 1rem; border-radius: .4rem; background: #e62117; color: #fff; font-weight: 700; text-decoration: none; }
-.official-link:hover, .official-link:focus-visible { background: #ff3a31; }
+.episode-copy p { margin: 0 0 .8rem; color: var(--iw-text-muted); line-height: 1.55; }
+.date { color: var(--iw-accent) !important; font-size: .9rem; font-weight: 600; }
+.official-link { display: inline-block; padding: .7rem 1rem; border-radius: .4rem; background: var(--iw-youtube); color: var(--iw-text-strong); font-weight: 700; text-decoration: none; }
+.official-link:hover, .official-link:focus-visible { background: var(--iw-youtube-hover); }
 .episodes { margin-top: 2.5rem; }
 .episodes > h2 { margin-bottom: 1rem; }
 .episode-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
-.episode-card { padding: 0; overflow: hidden; border: 1px solid #444; border-radius: .45rem; background: #171717; color: inherit; text-align: left; cursor: pointer; }
-.episode-card.selected, .episode-card:focus-visible { border-color: #ee8ca9; outline: 2px solid #ee8ca9; outline-offset: 2px; }
-.episode-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
+.episode-card { padding: 0; overflow: hidden; border: 1px solid var(--iw-border); border-radius: .45rem; background: var(--iw-surface); color: inherit; text-align: left; cursor: pointer; }
+.episode-card.selected, .episode-card:focus-visible { border-color: var(--iw-accent); outline: 2px solid var(--iw-accent); outline-offset: 2px; }
+.episode-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: var(--iw-media); }
 .episode-card-copy { display: grid; gap: .45rem; padding: .75rem; }
 .episode-card-copy strong { line-height: 1.3; }
-.episode-card-copy small { color: #bfbfbf; }
-.error { color: #ffb5b5; }
+.episode-card-copy small { color: var(--iw-text-muted); }
+.error { color: var(--iw-danger); }
 </style>

@@ -302,14 +302,14 @@ watch(
 
 <style scoped>
 .idol-timeline {
-  background: #000;
+  background: var(--iw-media);
   min-height: 100vh;
   padding: 1rem;
 }
 
 .loading,
 .error {
-  color: #888;
+  color: var(--iw-text-subtle);
   padding: 2rem;
 }
 
@@ -320,14 +320,14 @@ watch(
 .year-label {
   font-size: 2rem;
   font-weight: 600;
-  color: #e6e6e6;
+  color: var(--iw-text);
   margin: 1.5rem 0 1rem;
 }
 
 .year-label {
   position: sticky;
   top: 0;
-  background: #000;
+  background: var(--iw-media);
   z-index: 20;
 }
 
@@ -337,7 +337,7 @@ watch(
 
 .loading-more,
 .end {
-  color: #666;
+  color: var(--iw-text-subtle);
   text-align: center;
   padding: 2rem;
 }

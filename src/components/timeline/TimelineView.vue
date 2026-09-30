@@ -41,7 +41,11 @@ const cursor = ref(null)
 const hasMore = ref(true)
 const loadingMore = ref(false)
 
-const isRelevance = computed(() => props.presentation === 'relevance')
+const isRanked = computed(() => props.presentation === 'relevance' || props.presentation === 'similarity')
+const isSimilarity = computed(() => props.presentation === 'similarity')
+const rankedTitle = computed(() => isSimilarity.value
+  ? t('search.similarityTitle')
+  : t('search.relevanceTitle', { query: props.apiQuery.context }))
 
 // Lightbox state belongs in the URL but must never become an API filter or
 // reload the active result set while navigating between pictures.
@@ -180,7 +184,7 @@ const timelineByYear = computed(() => {
 })
 
 const flatItems = computed(() => {
-  return isRelevance.value ? relevanceItems.value : days.value.flatMap(day => day.items)
+  return isRanked.value ? relevanceItems.value : days.value.flatMap(day => day.items)
 })
 
 const activeItem = computed(() => {
@@ -291,7 +295,7 @@ async function loadTimeline({ reset = false } = {}) {
   }
 
   // Chronological timelines group media by the viewer's local calendar day.
-  if (!isRelevance.value) {
+  if (!isRanked.value) {
     params.append('tz', timezone)
   }
 
@@ -302,10 +306,10 @@ async function loadTimeline({ reset = false } = {}) {
 
   try {
 
-    const endpoint = isRelevance.value ? '/context-search' : '/timeline'
+    const endpoint = isSimilarity.value ? '/similarity-search' : isRanked.value ? '/context-search' : '/timeline'
     const res = await apiGet(`${endpoint}?${params.toString()}`)
 
-    if (isRelevance.value) {
+    if (isRanked.value) {
       const knownIds = new Set(relevanceItems.value.map(item => item.id))
       const normalized = res.items.map(item => ({
         ...item,
@@ -370,7 +374,7 @@ async function loadTimeline({ reset = false } = {}) {
     </div>
 
     <div v-if="loading" class="loading">
-      {{ isRelevance ? t('search.relevanceLoading') : t('timeline.loading') }}
+      {{ isRanked ? (isSimilarity ? t('search.similarityLoading') : t('search.relevanceLoading')) : t('timeline.loading') }}
     </div>
 
     <div v-else-if="error" class="error">
@@ -378,14 +382,14 @@ async function loadTimeline({ reset = false } = {}) {
     </div>
 
     <section
-      v-else-if="isRelevance"
+      v-else-if="isRanked"
       class="relevance-results"
     >
       <h2 class="relevance-heading">
-        {{ t('search.relevanceTitle', { query: apiQuery.context }) }}
+        {{ rankedTitle }}
       </h2>
       <p v-if="!relevanceItems.length" class="empty-results">
-        {{ t('search.relevanceEmpty') }}
+        {{ isSimilarity ? t('search.similarityEmpty') : t('search.relevanceEmpty') }}
       </p>
       <div v-else class="relevance-grid">
         <TimelineItem
@@ -421,11 +425,11 @@ async function loadTimeline({ reset = false } = {}) {
     />
 
     <div v-if="loadingMore" class="loading-more">
-      {{ isRelevance ? t('search.relevanceLoadingMore') : t('timeline.loadingMore') }}
+      {{ isRanked ? (isSimilarity ? t('search.similarityLoadingMore') : t('search.relevanceLoadingMore')) : t('timeline.loadingMore') }}
     </div>
 
     <div v-if="!hasMore" class="end">
-      {{ isRelevance ? t('search.relevanceEnd') : t('timeline.end') }}
+      {{ isRanked ? (isSimilarity ? t('search.similarityEnd') : t('search.relevanceEnd')) : t('timeline.end') }}
     </div>
 
   </main>
@@ -442,14 +446,14 @@ async function loadTimeline({ reset = false } = {}) {
 
 <style scoped>
 .idol-timeline {
-  background: #000;
+  background: var(--iw-media);
   min-height: 100vh;
   padding: 1rem;
 }
 
 .loading,
 .error {
-  color: #888;
+  color: var(--iw-text-subtle);
   padding: 2rem;
 }
 
@@ -458,7 +462,7 @@ async function loadTimeline({ reset = false } = {}) {
 }
 
 .relevance-heading {
-  color: #e6e6e6;
+  color: var(--iw-text);
   font-size: 1.25rem;
   margin: 1rem 0;
 }
@@ -470,21 +474,21 @@ async function loadTimeline({ reset = false } = {}) {
 }
 
 .empty-results {
-  color: #888;
+  color: var(--iw-text-subtle);
   padding: 2rem 0;
 }
 
 .year-label {
   font-size: 2rem;
   font-weight: 600;
-  color: #e6e6e6;
+  color: var(--iw-text);
   margin: 1.5rem 0 1rem;
 }
 
 .year-label {
   position: sticky;
   top: 56px;
-  background: #000;
+  background: var(--iw-media);
   z-index: 20;
 }
 
@@ -494,7 +498,7 @@ async function loadTimeline({ reset = false } = {}) {
 
 .loading-more,
 .end {
-  color: #666;
+  color: var(--iw-text-subtle);
   text-align: center;
   padding: 2rem;
 }
@@ -522,7 +526,7 @@ async function loadTimeline({ reset = false } = {}) {
 .back-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--iw-text-strong);
   font-size: 1.25rem;
   cursor: pointer;
   opacity: 0.85;
@@ -540,7 +544,7 @@ async function loadTimeline({ reset = false } = {}) {
 .icon-btn {
   background: none;
   border: none;
-  color: #fff;
+  color: var(--iw-text-strong);
   font-size: 1.25rem;
   cursor: pointer;
   opacity: 0.85;

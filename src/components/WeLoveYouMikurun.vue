@@ -170,20 +170,20 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.mikurun-tribute { padding: 2rem 1rem 1.5rem; background: linear-gradient(180deg, #120b14, #000); color: #fff; text-align: center; outline: none; }
-.mikurun-tribute:focus-visible { box-shadow: inset 0 0 0 2px #fff; }
+.mikurun-tribute { padding: 2rem 1rem 1.5rem; background: linear-gradient(180deg, #120b14, var(--iw-media)); color: var(--iw-text-strong); text-align: center; outline: none; }
+.mikurun-tribute:focus-visible { box-shadow: inset 0 0 0 2px var(--iw-text-strong); }
 h2 { margin: 0 0 1rem; font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 600; }
-.carousel { position: relative; display: flex; align-items: center; justify-content: center; max-width: 980px; height: min(68vw, 680px); min-height: 300px; margin: 0 auto; background: #080808; overflow: hidden; }
+.carousel { position: relative; display: flex; align-items: center; justify-content: center; max-width: 980px; height: min(68vw, 680px); min-height: 300px; margin: 0 auto; background: var(--iw-bg); overflow: hidden; }
 .carousel img { width: 100%; height: 100%; object-fit: contain; animation: fade-in 260ms ease-out; }
-.arrow { position: absolute; z-index: 1; top: 50%; display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .62); color: #fff; cursor: pointer; transform: translateY(-50%); }
+.arrow { position: absolute; z-index: 1; top: 50%; display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: rgb(0 0 0 / .62); color: var(--iw-text-strong); cursor: pointer; transform: translateY(-50%); }
 .arrow:hover, .arrow:focus-visible { background: rgba(255, 255, 255, .22); }
 .previous { left: .75rem; }
 .next { right: .75rem; }
-.counter { margin: .7rem 0 0; color: #c9c9c9; font-variant-numeric: tabular-nums; }
+.counter { margin: .7rem 0 0; color: var(--iw-text-muted); font-variant-numeric: tabular-nums; }
 .concert-player { width: min(100%, 980px); margin: 2rem auto 0; }
 .concert-player h3 { margin: 0 0 1rem; font-size: clamp(1.25rem, 3vw, 1.75rem); font-weight: 600; }
-.concert-video { display: block; width: 100%; aspect-ratio: 16 / 9; background: #080808; }
-.concert-unavailable { margin: .8rem 0 0; color: #f5b9b9; }
+.concert-video { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--iw-bg); }
+.concert-unavailable { margin: .8rem 0 0; color: var(--iw-danger); }
 @keyframes fade-in { from { opacity: .25; } to { opacity: 1; } }
 @media (max-width: 600px) { .carousel { height: 78vw; min-height: 240px; } .arrow { width: 42px; height: 42px; } .previous { left: .4rem; } .next { right: .4rem; } }
 </style>

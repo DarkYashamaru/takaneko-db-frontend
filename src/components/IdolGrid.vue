@@ -24,7 +24,7 @@ import { t } from '@/i18n'
 }
 
 .section-title {
-  color: #fff;
+  color: var(--iw-text-strong);
   font-size: 1.4rem;
   margin-bottom: 1rem;
 }
