@@ -20,8 +20,11 @@ watch(
 
 const apiQuery = computed(() => {
   const query = { ...route.query }
+  delete query.photo
   return query
 })
+
+const presentation = computed(() => apiQuery.value.context?.trim() ? 'relevance' : 'timeline')
 
 function onOpen(item) {
   router.replace({
@@ -47,6 +50,7 @@ function onError(err) {
 <template>
   <TimelineView
     :apiQuery="apiQuery"
+    :presentation="presentation"
     @open="onOpen"
     @close="onClose"
     @error="onError"

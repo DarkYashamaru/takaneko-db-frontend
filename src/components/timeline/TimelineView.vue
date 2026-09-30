@@ -3,10 +3,11 @@ import { ref, onMounted, watch, computed, onUnmounted } from 'vue'
 import { apiGet } from '@/services/api'
 import { MEDIA_BASE } from '@/config/urls'
 import TimelineDay from '@/components/timeline/TimelineDay.vue'
+import TimelineItem from '@/components/timeline/TimelineItem.vue'
 import Lightbox from '@/components/Lightbox.vue'
 import { ArrowLeft } from 'lucide-vue-next'
 import { t } from '@/i18n'
-import { routeCategory, track } from '@/services/analytics'
+import { track } from '@/services/analytics'
 import { useRoute, useRouter } from 'vue-router'
 
 
@@ -18,6 +19,10 @@ const props = defineProps({
   apiQuery: {
     type: Object,
     required: true
+  },
+  presentation: {
+    type: String,
+    default: 'timeline'
   }
 })
 
@@ -31,9 +36,21 @@ const loading = ref(true)
 const error = ref(null)
 
 const days = ref([])
+const relevanceItems = ref([])
 const cursor = ref(null)
 const hasMore = ref(true)
 const loadingMore = ref(false)
+
+const isRelevance = computed(() => props.presentation === 'relevance')
+
+// Lightbox state belongs in the URL but must never become an API filter or
+// reload the active result set while navigating between pictures.
+const requestQuery = computed(() => {
+  const query = { ...props.apiQuery }
+  delete query.photo
+  return query
+})
+const requestKey = computed(() => JSON.stringify(requestQuery.value))
 
 function updateActiveIndex(id)
 {
@@ -64,6 +81,15 @@ watch(
   (newPhoto) => {
     updateActiveIndex(newPhoto)
   }
+)
+
+watch(
+  () => [props.presentation, requestKey.value],
+  () => {
+    activeIndex.value = null
+    if (observer) loadTimeline({ reset: true })
+  },
+  { deep: true }
 )
 
 function openImage(item) {
@@ -154,7 +180,7 @@ const timelineByYear = computed(() => {
 })
 
 const flatItems = computed(() => {
-  return days.value.flatMap(day => day.items)
+  return isRelevance.value ? relevanceItems.value : days.value.flatMap(day => day.items)
 })
 
 const activeItem = computed(() => {
@@ -172,9 +198,9 @@ async function loadStartingPictureInLightbox()
   {
     await loadTimeline()
     index = getIndexFromId(route.query.photo)
-  } while (index === -1);
+  } while (index === -1 && hasMore.value);
 
-  updateActiveIndex(route.query.photo)
+  if (index !== -1) updateActiveIndex(route.query.photo)
 }
 
 onMounted(() => 
@@ -240,6 +266,7 @@ async function loadTimeline({ reset = false } = {}) {
 
   if (reset) {
     days.value = []
+    relevanceItems.value = []
     cursor.value = null
     hasMore.value = true
   }
@@ -252,9 +279,9 @@ async function loadTimeline({ reset = false } = {}) {
 
   const params = new URLSearchParams()
 
-  // append apiQuery safely
-  for (const key in props.apiQuery) {
-    const value = props.apiQuery[key]
+  // Append the request query without the lightbox-only photo parameter.
+  for (const key in requestQuery.value) {
+    const value = requestQuery.value[key]
 
     if (Array.isArray(value)) {
       value.forEach(v => params.append(key, v))
@@ -263,8 +290,10 @@ async function loadTimeline({ reset = false } = {}) {
     }
   }
 
-  // always append timezone
-  params.append('tz', timezone)
+  // Chronological timelines group media by the viewer's local calendar day.
+  if (!isRelevance.value) {
+    params.append('tz', timezone)
+  }
 
   // cursor
   if (cursor.value) {
@@ -273,35 +302,47 @@ async function loadTimeline({ reset = false } = {}) {
 
   try {
 
-    const res = await apiGet(`/timeline?${params.toString()}`)
+    const endpoint = isRelevance.value ? '/context-search' : '/timeline'
+    const res = await apiGet(`${endpoint}?${params.toString()}`)
 
-    const normalized = res.items.map(group => ({
-      ...group,
-      year: new Date(group.date).getFullYear(),
-      items: group.items.map(item => ({
+    if (isRelevance.value) {
+      const knownIds = new Set(relevanceItems.value.map(item => item.id))
+      const normalized = res.items.map(item => ({
+        ...item,
+        thumbnail: `${MEDIA_BASE}${item.thumbnail}`,
+        src: `${MEDIA_BASE}${item.src}`
+      })).filter(item => !knownIds.has(item.id))
+      relevanceItems.value.push(...normalized)
+      if (!params.has('cursor')) {
+        track('search_results_loaded', { result_count: normalized.length, has_more: Boolean(res.next_cursor) }, route.path)
+      }
+    } else {
+      const normalized = res.items.map(group => ({
+        ...group,
+        year: new Date(group.date).getFullYear(),
+        items: group.items.map(item => ({
         ...item,
         thumbnail: `${MEDIA_BASE}${item.thumbnail}`,
         src: `${MEDIA_BASE}${item.src}`
       }))
     }))
 
-    // ✅ Deduplicate days AGAINST CURRENTLY LOADED DAYS
-    const existingDates = new Set(days.value.map(d => d.date))
-    const deduped = normalized.filter(group => {
-      if (existingDates.has(group.date)) return false
-      existingDates.add(group.date)
-      return true
-    })
+      // Deduplicate days against currently loaded chronological pages.
+      const existingDates = new Set(days.value.map(d => d.date))
+      const deduped = normalized.filter(group => {
+        if (existingDates.has(group.date)) return false
+        existingDates.add(group.date)
+        return true
+      })
 
-    // ✅ THIS is what actually grows the timeline
-    days.value.push(...deduped)
+      days.value.push(...deduped)
+      if (!params.has('cursor')) {
+        track('search_results_loaded', { result_count: normalized.reduce((count, group) => count + group.items.length, 0), has_more: Boolean(res.next_cursor) }, route.path)
+      }
+    }
 
-
-    // cursor handling (safe for later)
     cursor.value = res.next_cursor ?? null
     hasMore.value = Boolean(res.next_cursor)
-    const page = routeCategory(route.path)
-    if (!params.has("cursor")) track("search_results_loaded", { result_count: normalized.reduce((count, group) => count + group.items.length, 0), has_more: hasMore.value }, route.path)
     if (days.value.length && [2, 5, 10].includes(days.value.length)) track("timeline_depth", { loaded_pages: days.value.length }, route.path)
 
   } catch (err) {
@@ -329,12 +370,32 @@ async function loadTimeline({ reset = false } = {}) {
     </div>
 
     <div v-if="loading" class="loading">
-      {{ t('timeline.loading') }}
+      {{ isRelevance ? t('search.relevanceLoading') : t('timeline.loading') }}
     </div>
 
     <div v-else-if="error" class="error">
       {{ error }}
     </div>
+
+    <section
+      v-else-if="isRelevance"
+      class="relevance-results"
+    >
+      <h2 class="relevance-heading">
+        {{ t('search.relevanceTitle', { query: apiQuery.context }) }}
+      </h2>
+      <p v-if="!relevanceItems.length" class="empty-results">
+        {{ t('search.relevanceEmpty') }}
+      </p>
+      <div v-else class="relevance-grid">
+        <TimelineItem
+          v-for="item in relevanceItems"
+          :key="item.id"
+          :item="item"
+          @open="openImage"
+        />
+      </div>
+    </section>
 
     <section
       v-else
@@ -360,11 +421,11 @@ async function loadTimeline({ reset = false } = {}) {
     />
 
     <div v-if="loadingMore" class="loading-more">
-      {{ t('timeline.loadingMore') }}
+      {{ isRelevance ? t('search.relevanceLoadingMore') : t('timeline.loadingMore') }}
     </div>
 
     <div v-if="!hasMore" class="end">
-      {{ t('timeline.end') }}
+      {{ isRelevance ? t('search.relevanceEnd') : t('timeline.end') }}
     </div>
 
   </main>
@@ -394,6 +455,23 @@ async function loadTimeline({ reset = false } = {}) {
 
 .year-block {
   margin-bottom: 3rem;
+}
+
+.relevance-heading {
+  color: #e6e6e6;
+  font-size: 1.25rem;
+  margin: 1rem 0;
+}
+
+.relevance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 200px);
+  gap: 6px;
+}
+
+.empty-results {
+  color: #888;
+  padding: 2rem 0;
 }
 
 .year-label {

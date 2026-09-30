@@ -36,7 +36,12 @@ const messages = {
       faces: 'Members',
       platform: 'Platform',
       allPlatforms: 'All platforms',
-      submit: 'Search'
+      submit: 'Search',
+      relevanceTitle: 'Results for “{query}”',
+      relevanceLoading: 'Finding relevant media…',
+      relevanceLoadingMore: 'Finding more relevant media…',
+      relevanceEmpty: 'No matching media found.',
+      relevanceEnd: 'You’ve reached the end of these results.'
     },
 
     timeline: {
@@ -140,7 +145,12 @@ const messages = {
       faces: 'Miembros',
       platform: 'Plataforma',
       allPlatforms: 'Todas las plataformas',
-      submit: 'Buscar'
+      submit: 'Buscar',
+      relevanceTitle: 'Resultados para “{query}”',
+      relevanceLoading: 'Buscando contenido relevante…',
+      relevanceLoadingMore: 'Buscando más contenido relevante…',
+      relevanceEmpty: 'No se encontró contenido coincidente.',
+      relevanceEnd: 'Has llegado al final de estos resultados.'
     },
 
     timeline: {
